@@ -20,10 +20,10 @@ export interface InitiateStripePayload {
 }
 
 export interface ConfirmStripePayload {
-    paymentIntentId: string;
+    sessionId: string;
 }
 
 export interface StripeInitiateResponse {
-    clientSecret: string;
-    paymentIntentId: string;
+    sessionId: string;
+    url: string;
 }

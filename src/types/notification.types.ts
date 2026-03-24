@@ -9,4 +9,8 @@ export interface Notification {
         trackingNumber: string;
         status: string;
     };
+    user?: {
+        name: string;
+        email: string;
+    };
 }

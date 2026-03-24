@@ -3,12 +3,14 @@ import { z } from "zod";
 export const createShipmentSchema = z.object({
     pickupAddress: z.string().min(5, "Pickup address must be at least 5 characters"),
     pickupCity: z.string().min(1, "Pickup city is required"),
+    pickupPhone: z.string().min(10, "Pickup phone must be at least 10 digits"),
     deliveryAddress: z.string().min(5, "Delivery address must be at least 5 characters"),
     deliveryCity: z.string().min(1, "Delivery city is required"),
+    deliveryPhone: z.string().min(10, "Delivery phone must be at least 10 digits"),
     packageType: z.string().min(1, "Package type is required"),
     weight: z.coerce.number().positive("Weight must be positive"),
     priority: z.enum(["STANDARD", "EXPRESS"] as const).optional().default("STANDARD"),
-    paymentMethod: z.enum(["COD", "STRIPE", "SSLCOMMERZ"] as const, {
+    paymentMethod: z.enum(["COD", "STRIPE"] as const, {
         error: "Select a valid payment method",
     }),
     note: z.string().optional(),

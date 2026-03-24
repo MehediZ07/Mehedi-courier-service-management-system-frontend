@@ -13,7 +13,7 @@ export type ShipmentStatus =
     | "RETURNED";
 
 export type Priority = "STANDARD" | "EXPRESS";
-export type PaymentMethod = "COD" | "STRIPE" | "SSLCOMMERZ";
+export type PaymentMethod = "COD" | "STRIPE";
 export type PaymentStatus = "PENDING" | "PAID" | "COD" | "FAILED";
 
 export interface Pricing {
@@ -78,8 +78,10 @@ export interface Shipment {
 export interface CreateShipmentPayload {
     pickupAddress: string;
     pickupCity: string;
+    pickupPhone: string;
     deliveryAddress: string;
     deliveryCity: string;
+    deliveryPhone: string;
     packageType: string;
     weight: number;
     priority?: Priority;
