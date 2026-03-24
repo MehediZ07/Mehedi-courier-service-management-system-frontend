@@ -5,11 +5,13 @@ import axios from 'axios';
 import { cookies, headers } from 'next/headers';
 import { isTokenExpiringSoon } from '../tokenUtils';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-if(!API_BASE_URL) {
-    throw new Error('API_BASE_URL is not defined in environment variables');
-}
+const getApiBaseUrl = () => {
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!API_BASE_URL) {
+        throw new Error('NEXT_PUBLIC_API_BASE_URL is not defined in environment variables');
+    }
+    return API_BASE_URL;
+};
 
 async function tryRefreshToken(
     accessToken: string,
@@ -42,18 +44,16 @@ const axiosInstance = async () => {
         await tryRefreshToken(accessToken, refreshToken);
     }
 
-    const cookieHeader = cookieStore
-                                .getAll()
-                                .map((cookie) => `${cookie.name}=${cookie.value}`)
-                                .join("; ");    
-    // eg Cookie: "accessToken=abc123; refreshToken=def456"
+    // Get fresh token after potential refresh
+    const currentAccessToken = cookieStore.get("accessToken")?.value;
 
     const instance = axios.create({
-        baseURL : API_BASE_URL,
+        baseURL : getApiBaseUrl(),
         timeout : 30000,
         headers:{
             'Content-Type' : 'application/json',
-            Cookie : cookieHeader
+            // Send token in Authorization header instead of Cookie
+            ...(currentAccessToken && { 'Authorization': `Bearer ${currentAccessToken}` })
         }
     })
 

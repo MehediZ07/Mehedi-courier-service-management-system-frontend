@@ -12,6 +12,12 @@ export interface PaginationMeta {
 }
 
 export interface PaginatedResponse<T> {
+    data: T[];
+    meta: PaginationMeta;
+}
+
+// For paginated API responses where data and meta are at root level
+export interface PaginatedApiResponse<T> {
     success: boolean;
     message: string;
     data: T[];

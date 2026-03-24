@@ -4,14 +4,16 @@ import { setTokenInCookies } from "@/lib/tokenUtils";
 import { LoginPayload, RegisterCourierPayload, RegisterPayload } from "@/types/auth.types";
 import { cookies } from "next/headers";
 
-const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-if (!BASE_API_URL) {
-    throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined");
-}
+const getBaseApiUrl = () => {
+    const BASE_API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+    if (!BASE_API_URL) {
+        throw new Error("NEXT_PUBLIC_API_BASE_URL is not defined");
+    }
+    return BASE_API_URL;
+};
 
 export async function loginService(payload: LoginPayload) {
-    const res = await fetch(`${BASE_API_URL}/auth/login`, {
+    const res = await fetch(`${getBaseApiUrl()}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -29,7 +31,7 @@ export async function loginService(payload: LoginPayload) {
 }
 
 export async function registerService(payload: RegisterPayload) {
-    const res = await fetch(`${BASE_API_URL}/auth/register`, {
+    const res = await fetch(`${getBaseApiUrl()}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -43,7 +45,7 @@ export async function registerService(payload: RegisterPayload) {
 // Admin must then create the courier profile via /couriers.
 export async function registerCourierService(payload: RegisterCourierPayload) {
     const { name, email, password, phone } = payload;
-    const res = await fetch(`${BASE_API_URL}/auth/register`, {
+    const res = await fetch(`${getBaseApiUrl()}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password, phone, role: "USER" }),
@@ -61,7 +63,7 @@ export async function logoutService() {
 
 export async function getNewTokensWithRefreshToken(refreshToken: string): Promise<boolean> {
     try {
-        const res = await fetch(`${BASE_API_URL}/auth/refresh-token`, {
+        const res = await fetch(`${getBaseApiUrl()}/auth/refresh-token`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -84,7 +86,7 @@ export async function getUserInfo() {
         const accessToken = cookieStore.get("accessToken")?.value;
         if (!accessToken) return null;
 
-        const res = await fetch(`${BASE_API_URL}/auth/me`, {
+        const res = await fetch(`${getBaseApiUrl()}/auth/me`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -103,7 +105,7 @@ export async function changePasswordService(payload: { oldPassword: string; newP
     const cookieStore = await cookies();
     const accessToken = cookieStore.get("accessToken")?.value;
 
-    const res = await fetch(`${BASE_API_URL}/auth/change-password`, {
+    const res = await fetch(`${getBaseApiUrl()}/auth/change-password`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

@@ -1,9 +1,14 @@
 export type UserRole = "SUPER_ADMIN" | "ADMIN" | "COURIER" | "MERCHANT" | "USER";
 
 export const authRoutes = ["/login", "/register", "/register-courier", "/forgot-password", "/reset-password"];
+export const publicRoutes = ["/", "/verify-email"];
 
 export const isAuthRoute = (pathname: string) => {
     return authRoutes.some((route: string) => route === pathname);
+};
+
+export const isPublicRoute = (pathname: string) => {
+    return publicRoutes.some((route: string) => route === pathname);
 };
 
 export type RouteConfig = {

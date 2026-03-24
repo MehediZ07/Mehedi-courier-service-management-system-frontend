@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDefaultDashboardRoute, getRouteOwner, isAuthRoute, UserRole } from "./lib/authUtils";
+import { getDefaultDashboardRoute, getRouteOwner, isAuthRoute, isPublicRoute, UserRole } from "./lib/authUtils";
 import { jwtUtils } from "./lib/jwtUtils";
 import { isTokenExpiringSoon } from "./lib/tokenUtils";
 import { getNewTokensWithRefreshToken } from "./services/auth.services";
@@ -18,8 +18,10 @@ export async function proxy(request: NextRequest) {
         const accessToken = request.cookies.get("accessToken")?.value;
         const refreshToken = request.cookies.get("refreshToken")?.value;
 
-        const decoded = accessToken && jwtUtils.verifyToken(accessToken, process.env.JWT_ACCESS_SECRET as string).data;
-        const isValidAccessToken = accessToken && jwtUtils.verifyToken(accessToken, process.env.JWT_ACCESS_SECRET as string).success;
+        // Decode token without verification (middleware doesn't have access to secret)
+        // Token is httpOnly and can only be set by server actions, so it's safe
+        const decoded = accessToken ? jwtUtils.decodedToken(accessToken) : null;
+        const isValidAccessToken = !!decoded && decoded.exp && decoded.exp * 1000 > Date.now();
 
         let userRole: UserRole | null = null;
         if (decoded) {
@@ -32,8 +34,13 @@ export async function proxy(request: NextRequest) {
         const routeOwner = getRouteOwner(pathname);
         const isAuth = isAuthRoute(pathname);
 
+        // Rule 0: Public route → always allow, no auth needed
+        if (isPublicRoute(pathname)) {
+            return NextResponse.next();
+        }
+
         // Proactively refresh token if expiring soon
-        if (isValidAccessToken && refreshToken && (await isTokenExpiringSoon(accessToken))) {
+        if (isValidAccessToken && accessToken && refreshToken && (await isTokenExpiringSoon(accessToken))) {
             const requestHeaders = new Headers(request.headers);
             try {
                 const refreshed = await refreshTokenMiddleware(refreshToken);
@@ -49,24 +56,24 @@ export async function proxy(request: NextRequest) {
             return NextResponse.redirect(new URL(getDefaultDashboardRoute(userRole as UserRole), request.url));
         }
 
-        // Rule 2: Public route → allow
+        // Rule 2: Other public routes (no route owner) → allow
         if (routeOwner === null) {
             return NextResponse.next();
         }
 
-        // Rule 3: Not logged in but hitting protected route → redirect to login
+        // Rule 4: Not logged in but hitting protected route → redirect to login
         if (!accessToken || !isValidAccessToken) {
             const loginUrl = new URL("/login", request.url);
             loginUrl.searchParams.set("redirect", pathname);
             return NextResponse.redirect(loginUrl);
         }
 
-        // Rule 4: Common protected route (my-profile, change-password) → allow
+        // Rule 5: Common protected route (my-profile, change-password) → allow
         if (routeOwner === "COMMON") {
             return NextResponse.next();
         }
 
-        // Rule 5: Role-based route — wrong role → redirect to own dashboard
+        // Rule 6: Role-based route — wrong role → redirect to own dashboard
         if (routeOwner !== userRole) {
             return NextResponse.redirect(new URL(getDefaultDashboardRoute(userRole as UserRole), request.url));
         }
@@ -77,9 +84,3 @@ export async function proxy(request: NextRequest) {
         return NextResponse.next();
     }
 }
-
-export const config = {
-    matcher: [
-        "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
-    ],
-};

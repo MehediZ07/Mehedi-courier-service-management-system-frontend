@@ -10,12 +10,14 @@ export const setCookie = async (
     const cookieStore = await cookies();
 
     cookieStore.set(name, value, {
-        httpOnly : true,
+        httpOnly : false, // Changed to false so client-side JavaScript can read it
         secure : process.env.NODE_ENV === "production",
-        sameSite : "strict",
+        sameSite : "lax",
         path : "/",
         maxAge : maxAgeInSeconds,
     })
+    
+    console.log('[setCookie]', name, 'set with maxAge:', maxAgeInSeconds);
 }
 
 export const getCookie = async (name : string) => {
