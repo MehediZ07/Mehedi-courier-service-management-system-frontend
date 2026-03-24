@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Package, Twitter, Github, Linkedin, Mail } from "lucide-react";
+import Image from "next/image";
 
 const footerLinks = {
   Product: [
@@ -43,9 +44,8 @@ export default function Footer() {
         <div className="py-14 grid grid-cols-2 md:grid-cols-6 gap-10">
           {/* Brand */}
           <div className="col-span-2 flex flex-col gap-4">
-            <Link href="/" className="flex items-center gap-2 font-bold text-xl text-white">
-              <Package className="size-6 text-primary" style={{ color: "oklch(0.72 0.15 195)" }} />
-              SwiftShip
+            <Link href="/" className="flex items-center gap-2 font-bold text-xl text-primary">
+              <Image src="/swiftship-logo.png" alt="SwiftShip" width={172} height={44} className="h-12 w-auto" />
             </Link>
             <p className="text-sm text-white/50 leading-relaxed max-w-xs">
               The modern courier management platform connecting merchants, riders, and customers

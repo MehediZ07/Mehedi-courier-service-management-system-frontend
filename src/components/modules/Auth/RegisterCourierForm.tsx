@@ -14,6 +14,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeOff, Truck } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import Image from "next/image";
 
 const VEHICLE_TYPES = ["BIKE", "BICYCLE", "CAR", "VAN", "TRUCK"] as const;
 
@@ -51,8 +52,8 @@ const RegisterCourierForm = () => {
         <Card className="w-full max-w-md mx-auto shadow-md">
             <CardHeader className="text-center">
                 <div className="flex justify-center mb-2">
-                    <div className="bg-primary/10 p-3 rounded-full">
-                        <Truck className="size-7 text-primary" />
+                    <div className="m-3 rounded-full">
+                     <Image src="/swiftship-logo.png" alt="SwiftShip" width={172} height={44} className="h-12 w-auto" />
                     </div>
                 </div>
                 <CardTitle className="text-2xl font-bold">Courier Registration</CardTitle>

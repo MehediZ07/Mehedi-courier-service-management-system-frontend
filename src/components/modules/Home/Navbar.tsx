@@ -26,7 +26,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-bold text-xl text-primary">
-          <Image src="/swiftship-logo.png" alt="SwiftShip" width={128} height={32} className="h-8 w-auto" />
+          <Image src="/swiftship-logo.png" alt="SwiftShip" width={172} height={44} className="h-12 w-auto" />
         </Link>
 
         {/* Desktop nav */}

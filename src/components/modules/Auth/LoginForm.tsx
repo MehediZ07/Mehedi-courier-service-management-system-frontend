@@ -12,6 +12,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeOff, Package } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import Image from "next/image";
 
 interface LoginFormProps {
     redirectPath?: string;
@@ -49,8 +50,8 @@ const LoginForm = ({ redirectPath }: LoginFormProps) => {
         <Card className="w-full max-w-md mx-auto shadow-md">
             <CardHeader className="text-center">
                 <div className="flex justify-center mb-2">
-                    <div className="bg-primary/10 p-3 rounded-full">
-                        <Package className="size-7 text-primary" />
+                    <div className="m-3 rounded-full">
+                     <Image src="/swiftship-logo.png" alt="SwiftShip" width={172} height={44} className="h-12 w-auto" />
                     </div>
                 </div>
                 <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
