@@ -1,17 +1,15 @@
-"use server";
-
-import { httpClient } from "@/lib/axios/httpClient";
-import { PaginatedResponse } from "@/types/api.types";
+import { clientHttpClient } from "@/lib/axios/clientHttpClient";
+import { ApiResponse, PaginatedApiResponse } from "@/types/api.types";
 import { Notification } from "@/types/notification.types";
 
 export async function getMyNotifications(params?: Record<string, unknown>) {
-    return httpClient.get<PaginatedResponse<Notification>>("/notifications", { params });
+    return clientHttpClient.get<PaginatedApiResponse<Notification>>("/notifications", { params });
 }
 
 export async function markNotificationAsRead(id: string) {
-    return httpClient.patch<Notification>(`/notifications/${id}/read`, {});
+    return clientHttpClient.patch<ApiResponse<Notification>>(`/notifications/${id}/read`, {});
 }
 
 export async function markAllNotificationsAsRead() {
-    return httpClient.patch<{ count: number }>("/notifications/mark-all-read", {});
+    return clientHttpClient.patch<ApiResponse<{ count: number }>>("/notifications/mark-all-read", {});
 }

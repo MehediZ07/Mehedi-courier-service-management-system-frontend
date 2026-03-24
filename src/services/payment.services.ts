@@ -1,25 +1,23 @@
-"use server";
-
-import { httpClient } from "@/lib/axios/httpClient";
-import { PaginatedResponse } from "@/types/api.types";
+import { clientHttpClient } from "@/lib/axios/clientHttpClient";
+import { ApiResponse, PaginatedApiResponse } from "@/types/api.types";
 import { ConfirmStripePayload, InitiateStripePayload, Payment, StripeInitiateResponse } from "@/types/payment.types";
 
 export async function getAllPayments(params?: Record<string, unknown>) {
-    return httpClient.get<PaginatedResponse<Payment>>("/payments", { params });
+    return clientHttpClient.get<PaginatedApiResponse<Payment>>("/payments", { params });
 }
 
 export async function getPaymentByShipmentId(shipmentId: string) {
-    return httpClient.get<Payment>(`/payments/${shipmentId}`);
+    return clientHttpClient.get<ApiResponse<Payment>>(`/payments/${shipmentId}`);
 }
 
 export async function initiateStripePayment(shipmentId: string, payload: InitiateStripePayload) {
-    return httpClient.post<StripeInitiateResponse>(`/payments/${shipmentId}/initiate-stripe`, payload);
+    return clientHttpClient.post<StripeInitiateResponse>(`/payments/${shipmentId}/initiate-stripe`, payload);
 }
 
 export async function confirmStripePayment(payload: ConfirmStripePayload) {
-    return httpClient.post<Payment>("/payments/confirm-stripe", payload);
+    return clientHttpClient.post<Payment>("/payments/confirm-stripe", payload);
 }
 
 export async function markPaymentAsPaid(shipmentId: string) {
-    return httpClient.patch<Payment>(`/payments/${shipmentId}/mark-paid`, {});
+    return clientHttpClient.patch<Payment>(`/payments/${shipmentId}/mark-paid`, {});
 }
