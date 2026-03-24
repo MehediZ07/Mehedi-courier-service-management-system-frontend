@@ -31,7 +31,12 @@ const LoginForm = ({ redirectPath }: LoginFormProps) => {
             setServerError(null);
             try {
                 const result = await mutateAsync(value) as any;
-                if (!result?.success) {
+                if (result?.success && result?.redirectTo) {
+                    // Small delay to ensure cookies are set before redirect
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    // Use window.location for hard navigation to ensure cookies are sent
+                    window.location.href = result.redirectTo;
+                } else if (!result?.success) {
                     setServerError(result?.message || "Login failed");
                 }
             } catch (error: any) {

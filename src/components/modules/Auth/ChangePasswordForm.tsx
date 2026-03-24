@@ -43,7 +43,7 @@ export default function ChangePasswordForm() {
     });
 
     return (
-        <div className="max-w-md space-y-6">
+        <div className="space-y-6">
             <div>
                 <h1 className="text-2xl font-bold">Change Password</h1>
                 <p className="text-muted-foreground text-sm">Update your account password.</p>
