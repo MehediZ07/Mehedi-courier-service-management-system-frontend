@@ -19,7 +19,7 @@ export default function EarningsPage() {
     });
 
     const profile = profileData?.data;
-    const deliveries = (deliveriesData?.data as unknown as { data: { id: string; status: string; pricing?: { totalPrice: number }; deliveryCity: string; pickupCity: string }[] })?.data ?? [];
+    const deliveries = deliveriesData?.data ?? [];
     const delivered = deliveries.filter((d) => d.status === "DELIVERED");
 
     if (profileLoading || deliveriesLoading) {

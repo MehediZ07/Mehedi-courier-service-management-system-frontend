@@ -70,8 +70,8 @@ export default function MyDeliveries() {
         onError: (e: Error) => toast.error(e.message),
     });
 
-    const shipments: Shipment[] = (data?.data as unknown as { data: Shipment[] })?.data ?? [];
-    const meta = (data?.data as unknown as { meta: { page: number; limit: number; total: number; totalPages: number } })?.meta;
+    const shipments: Shipment[] = data?.data ?? [];
+    const meta = data?.meta;
 
     const openUpdate = (s: Shipment) => { setSelected(s); setNewStatus("PICKED_UP"); setNote(""); };
 
