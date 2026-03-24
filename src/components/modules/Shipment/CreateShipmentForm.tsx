@@ -1,11 +1,12 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { calculatePrice, createShipment } from "@/services/shipment.services";
+import { initiateStripePayment } from "@/services/payment.services";
 import { createShipmentSchema, CreateShipmentInput } from "@/zod/shipment.validation";
 import { Priority, PriceQuote } from "@/types/shipment.types";
 import AppField from "@/components/shared/form/AppField";
@@ -49,18 +50,54 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
         defaultValues: {
             pickupAddress: "",
             pickupCity: "",
+            pickupPhone: "",
             deliveryAddress: "",
             deliveryCity: "",
+            deliveryPhone: "",
             packageType: "Documents",
             weight: 1,
             priority: "STANDARD" as Priority,
-            paymentMethod: "COD" as "COD" | "STRIPE" | "SSLCOMMERZ",
+            paymentMethod: "COD" as "COD" | "STRIPE",
             note: "",
         },
         onSubmit: async ({ value }) => {
             const parsed = createShipmentSchema.safeParse(value);
             if (!parsed.success) return;
-            await submitShipment(parsed.data as CreateShipmentInput);
+            
+            const payload = parsed.data as CreateShipmentInput;
+            
+            // If Stripe payment, create shipment first then redirect to Stripe Checkout
+            if (payload.paymentMethod === "STRIPE") {
+                // Trigger quote calculation if not already done
+                if (!quote) {
+                    await triggerQuote();
+                    // Wait a bit for quote to be set
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+                if (!quote) {
+                    toast.error("Unable to calculate price. Please try again.");
+                    return;
+                }
+                
+                const shipmentRes = await submitShipment(payload);
+                if (!shipmentRes?.data) return;
+                
+                // Initiate Stripe payment and redirect
+                const paymentRes = await initiateStripePayment(shipmentRes.data.id, {
+                    amount: quote.totalPrice,
+                });
+                
+                // Redirect to Stripe Checkout
+                if (paymentRes.data.url) {
+                    window.location.replace(paymentRes.data.url);
+                } else {
+                    toast.error("Failed to initiate payment");
+                }
+            } else {
+                // COD - just create shipment
+                await submitShipment(payload);
+            }
         },
     });
 
@@ -80,7 +117,7 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
     };
 
     return (
-        <div className="max-w-2xl space-y-6">
+        <div className="space-y-6">
             <div>
                 <h1 className="text-2xl font-bold">Create Shipment</h1>
                 <p className="text-muted-foreground text-sm">Fill in the details — price is calculated automatically.</p>
@@ -119,6 +156,16 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
                                 />
                             )}
                         </form.Field>
+                        <form.Field name="pickupPhone">
+                            {(field) => (
+                                <AppField
+                                    field={field}
+                                    label="Pickup Phone"
+                                    placeholder="01712345678"
+                                    className="sm:col-span-1"
+                                />
+                            )}
+                        </form.Field>
                     </CardContent>
                 </Card>
 
@@ -144,6 +191,16 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
                                     field={field}
                                     label="Delivery City"
                                     placeholder="Chittagong"
+                                    className="sm:col-span-1"
+                                />
+                            )}
+                        </form.Field>
+                        <form.Field name="deliveryPhone">
+                            {(field) => (
+                                <AppField
+                                    field={field}
+                                    label="Delivery Phone"
+                                    placeholder="01812345678"
                                     className="sm:col-span-1"
                                 />
                             )}
@@ -229,7 +286,7 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
                                     <Select
                                         value={field.state.value}
                                         onValueChange={(v) =>
-                                            field.handleChange(v as "COD" | "STRIPE" | "SSLCOMMERZ")
+                                            field.handleChange(v as "COD" | "STRIPE")
                                         }
                                     >
                                         <SelectTrigger>
@@ -238,7 +295,6 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
                                         <SelectContent>
                                             <SelectItem value="COD">Cash on Delivery</SelectItem>
                                             <SelectItem value="STRIPE">Stripe</SelectItem>
-                                            <SelectItem value="SSLCOMMERZ">SSLCommerz</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>

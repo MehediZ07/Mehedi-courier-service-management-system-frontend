@@ -76,8 +76,8 @@ export default function MyShipments({ title = "My Shipments" }: MyShipmentsProps
         queryFn: () => getMyShipments(queryParams),
     });
 
-    const shipments: Shipment[] = (data?.data as unknown as { data: Shipment[] })?.data ?? [];
-    const meta = (data?.data as unknown as { meta: { page: number; limit: number; total: number; totalPages: number } })?.meta;
+    const shipments: Shipment[] = data?.data ?? [];
+    const meta = data?.meta;
 
     return (
         <div className="space-y-4">

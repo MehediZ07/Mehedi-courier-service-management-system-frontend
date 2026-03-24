@@ -23,7 +23,7 @@ export default function TrackShipment() {
     });
 
     return (
-        <div className="max-w-xl space-y-6">
+        <div className="space-y-6">
             <div>
                 <h1 className="text-2xl font-bold">Track Package</h1>
                 <p className="text-muted-foreground text-sm">Enter your tracking number to see live status.</p>
