@@ -1,7 +1,7 @@
-const MerchantDashboardPage = () => (
-    <div className="space-y-4">
-        <h1 className="text-2xl font-bold">Merchant Dashboard</h1>
-        <p className="text-muted-foreground">Manage your shipments and business profile.</p>
-    </div>
-);
+import MerchantDashboardContent from "@/components/modules/Dashboord/MerchantDashboardContent";
+
+const MerchantDashboardPage = () => {
+    return <MerchantDashboardContent />;
+};
+
 export default MerchantDashboardPage;

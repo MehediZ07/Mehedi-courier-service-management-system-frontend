@@ -1,7 +1,7 @@
-const UserDashboardPage = () => (
-    <div className="space-y-4">
-        <h1 className="text-2xl font-bold">My Dashboard</h1>
-        <p className="text-muted-foreground">Track your shipments and manage your account.</p>
-    </div>
-);
+import UserDashboardContent from "@/components/modules/Dashboord/UserDashboardContent";
+
+const UserDashboardPage = () => {
+    return <UserDashboardContent />;
+};
+
 export default UserDashboardPage;
