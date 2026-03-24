@@ -89,8 +89,8 @@ export default function CouriersManagement() {
         onError: (e: Error) => toast.error(e.message),
     });
 
-    const couriers: Courier[] = (data?.data as unknown as { data: Courier[] })?.data ?? [];
-    const meta = (data?.data as unknown as { meta: { page: number; limit: number; total: number; totalPages: number } })?.meta;
+    const couriers: Courier[] = data?.data ?? [];
+    const meta = data?.meta;
 
     return (
         <div className="space-y-4">

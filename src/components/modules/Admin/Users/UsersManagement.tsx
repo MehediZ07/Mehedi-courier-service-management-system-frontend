@@ -93,8 +93,8 @@ export default function UsersManagement() {
         onError: (e: Error) => toast.error(e.message),
     });
 
-    const users: User[] = (data?.data as unknown as { data: User[] })?.data ?? [];
-    const meta = (data?.data as unknown as { meta: { page: number; limit: number; total: number; totalPages: number } })?.meta;
+    const users: User[] = data?.data ?? [];
+    const meta = data?.meta;
 
     return (
         <div className="space-y-4">

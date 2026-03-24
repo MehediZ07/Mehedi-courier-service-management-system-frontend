@@ -21,10 +21,12 @@ const REGION_LABELS: Record<RegionType, string> = {
 
 export default function PricingManagement() {
     const queryClient = useQueryClient();
-    const { data: pricingList, isLoading } = useQuery({
+    const { data: pricingResponse, isLoading } = useQuery({
         queryKey: ["pricing"],
         queryFn: () => getAllPricing(),
     });
+
+    const pricingList = pricingResponse?.data ?? [];
 
     const { mutateAsync, isPending } = useMutation({
         mutationFn: upsertPricing,
@@ -64,7 +66,7 @@ export default function PricingManagement() {
                 <CardContent>
                     {isLoading ? (
                         <p className="text-sm text-muted-foreground">Loading...</p>
-                    ) : !pricingList?.data?.length ? (
+                    ) : !pricingList?.length ? (
                         <p className="text-sm text-muted-foreground">No pricing configured yet.</p>
                     ) : (
                         <div className="overflow-x-auto">
@@ -78,7 +80,7 @@ export default function PricingManagement() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {pricingList.data.map((p) => (
+                                    {pricingList.map((p) => (
                                         <tr key={p.id} className="border-b last:border-0">
                                             <td className="py-2 pr-4">
                                                 <Badge variant="outline">{REGION_LABELS[p.regionType]}</Badge>

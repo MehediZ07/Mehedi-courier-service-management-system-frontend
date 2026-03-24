@@ -94,9 +94,9 @@ export default function ShipmentsManagement() {
         onError: (e: Error) => toast.error(e.message),
     });
 
-    const shipments: Shipment[] = (data?.data as unknown as { data: Shipment[] })?.data ?? [];
-    const meta = (data?.data as unknown as { meta: { page: number; limit: number; total: number; totalPages: number } })?.meta;
-    const couriers = (couriersData?.data as unknown as { data: { id: string; user: { name: string } }[] })?.data ?? [];
+    const shipments: Shipment[] = data?.data ?? [];
+    const meta = data?.meta;
+    const couriers = couriersData?.data ?? [];
 
     const openAssign = (s: Shipment) => { setSelected(s); setCourierId(""); };
 

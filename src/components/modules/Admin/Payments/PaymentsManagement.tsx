@@ -64,8 +64,8 @@ export default function PaymentsManagement() {
         onError: (e: Error) => toast.error(e.message),
     });
 
-    const payments: Payment[] = (data?.data as unknown as { data: Payment[] })?.data ?? [];
-    const meta = (data?.data as unknown as { meta: { page: number; limit: number; total: number; totalPages: number } })?.meta;
+    const payments: Payment[] = data?.data ?? [];
+    const meta = data?.meta;
 
     const columnsWithAction: ColumnDef<Payment>[] = [
         ...columns,
