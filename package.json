@@ -1,13 +1,13 @@
 {
-  "name": "swiftship-courier-management-system",
+  "name": "swiftship-frontend",
   "version": "0.1.0",
   "private": true,
-"scripts": {
-  "dev": "next dev -p 4000",
-  "build": "next build",
-  "start": "next start -p 4000",
-  "lint": "eslint"
-},
+  "scripts": {
+    "dev": "next dev -p 4000",
+    "build": "next build",
+    "start": "next start -p 4000",
+    "lint": "eslint"
+  },
   "dependencies": {
     "@tanstack/react-devtools": "^0.9.6",
     "@tanstack/react-form": "^1.28.3",
@@ -23,7 +23,7 @@
     "input-otp": "^1.4.2",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.575.0",
-    "next": "16.1.6",
+    "next": "^15.1.3",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
