@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
+import { useGetMe } from "@/hooks/queries";
 
 const columns: ColumnDef<Notification>[] = [
     {
@@ -43,9 +44,20 @@ const columns: ColumnDef<Notification>[] = [
     },
 ];
 
+const adminColumns: ColumnDef<Notification>[] = [
+    {
+        accessorKey: "user.name",
+        header: "User",
+        cell: ({ row }) => row.original.user?.name ?? "—",
+    },
+    ...columns,
+];
+
 export default function NotificationsView() {
     const searchParams = useSearchParams();
     const queryClient = useQueryClient();
+    const { data: userResponse } = useGetMe();
+    const isAdmin = userResponse?.data?.role === "SUPER_ADMIN" || userResponse?.data?.role === "ADMIN";
 
     const { optimisticSortingState, optimisticPaginationState, isRouteRefreshPending, handleSortingChange, handlePaginationChange } =
         useServerManagedDataTable({ searchParams });
@@ -72,11 +84,12 @@ export default function NotificationsView() {
         onError: (e: Error) => toast.error(e.message),
     });
 
-    const notifications: Notification[] = (data?.data as unknown as { data: Notification[] })?.data ?? [];
-    const meta = (data?.data as unknown as { meta: { page: number; limit: number; total: number; totalPages: number } })?.meta;
+    const notifications: Notification[] = data?.data ?? [];
+    const meta = data?.meta;
 
+    const displayColumns = isAdmin ? adminColumns : columns;
     const columnsWithAction: ColumnDef<Notification>[] = [
-        ...columns,
+        ...displayColumns,
         {
             id: "markRead",
             header: "",

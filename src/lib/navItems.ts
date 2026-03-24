@@ -53,6 +53,7 @@ export const courierNavItems: NavSection[] = [
         title: "Account",
         items: [
             { title: "My Earnings", href: "/courier/dashboard/earnings", icon: "Wallet" },
+            { title: "Notifications", href: "/courier/dashboard/notifications", icon: "Bell" },
         ],
     },
 ];
@@ -63,6 +64,12 @@ export const merchantNavItems: NavSection[] = [
         items: [
             { title: "My Shipments", href: "/merchant/dashboard/my-shipments", icon: "Package" },
             { title: "Create Shipment", href: "/merchant/dashboard/create-shipment", icon: "PackagePlus" },
+        ],
+    },
+    {
+        title: "Account",
+        items: [
+            { title: "Notifications", href: "/merchant/dashboard/notifications", icon: "Bell" },
         ],
     },
 ];
