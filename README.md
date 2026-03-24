@@ -106,9 +106,9 @@ src/
 
 | Role | Dashboard Route | Key Pages |
 |---|---|---|
-| `SUPER_ADMIN` / `ADMIN` | `/admin/dashboard` | Couriers, Merchants, Users, Shipments, Payments, Pricing |
-| `COURIER` | `/courier/dashboard` | Available Shipments, My Deliveries, Earnings |
-| `MERCHANT` | `/merchant/dashboard` | My Shipments, Create Shipment |
+| `SUPER_ADMIN` / `ADMIN` | `/admin/dashboard` | Couriers, Merchants, Users, Shipments, Payments, Pricing, Notifications |
+| `COURIER` | `/courier/dashboard` | Available Shipments, My Deliveries, Earnings, Notifications |
+| `MERCHANT` | `/merchant/dashboard` | My Shipments, Create Shipment, Notifications |
 | `USER` | `/dashboard` | My Shipments, Create Shipment, Track, Notifications |
 
 Route access is enforced by the middleware in `src/proxy.ts`. Unauthenticated users are redirected to `/login`. Authenticated users accessing the wrong role's route are redirected to their own dashboard.
@@ -118,9 +118,18 @@ Route access is enforced by the middleware in `src/proxy.ts`. Unauthenticated us
 ## Key Features
 
 **Authentication**
-- JWT stored in httpOnly cookies (`accessToken`, `refreshToken`)
+- JWT stored in non-httpOnly cookies for cross-origin requests
+- Tokens sent via Authorization header
 - Automatic token refresh via `x-refresh-token` header
 - Middleware-level route protection per role
+- Client-side navigation after login for proper cookie handling
+
+**Notifications**
+- Real-time notification dropdown with unread count badge
+- Mark as read functionality with checkmark button
+- Auto-refresh every 30 seconds
+- Role-based notification pages for all user types
+- Admin can view all system notifications with user info
 
 **Shipment Creation**
 - No manual amount input — price is fetched live from `/pricing/calculate` as you fill in city and weight
@@ -133,6 +142,7 @@ Route access is enforced by the middleware in `src/proxy.ts`. Unauthenticated us
 **Data Tables**
 - Server-managed search, filter, sort, and pagination via URL query params
 - Reusable `DataTable`, `DataTableSearch`, `DataTableFilters`, `DataTablePagination` components
+- Proper data access patterns for paginated API responses
 
 **Charts**
 - Shipment bar chart and pie chart on admin dashboard using Recharts
@@ -165,6 +175,7 @@ bun run lint     # Run ESLint
 - Accent color: Cyan `oklch(0.72 0.15 195)`
 - Background: Off-white `oklch(0.98 0.004 80)`
 - Sidebar: Deep purple `oklch(0.22 0.08 295)`
+- Hover effects: 70-80% opacity for subtle interaction feedback
 - Full dark mode support
 
 ---
