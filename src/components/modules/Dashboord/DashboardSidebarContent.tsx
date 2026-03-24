@@ -6,6 +6,7 @@ import { getIconComponent } from "@/lib/iconMapper"
 import { cn } from "@/lib/utils"
 import { NavSection } from "@/types/dashboard.types"
 import { UserInfo } from "@/types/user.types"
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
@@ -26,7 +27,7 @@ const DashboardSidebarContent = ({dashboardHome, navItems, userInfo} : Dashboard
       {/* Logo / Brand */}
       <div className="flex h-16 items-center border-b px-6">
         <Link href={dashboardHome}>
-          <span className="text-xl font-bold text-primary">SwiftShip 🚚</span>
+          <Image src="/swiftship-logo.png" alt="SwiftShip" width={128} height={32} className="h-8 w-auto" />
         </Link>
       </div>
 
