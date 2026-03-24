@@ -1,7 +1,10 @@
-import Link from "next/link";
+"use client";
+
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Package, Truck, MapPin } from "lucide-react";
+import { useGetMe } from "@/hooks/useAuth";
 
 const stats = [
   { value: "50K+", label: "Shipments Delivered" },
@@ -11,6 +14,45 @@ const stats = [
 ];
 
 export default function HeroSection() {
+  const router = useRouter();
+  const { data: userData } = useGetMe();
+  const user = userData?.data;
+
+  const handleStartShipping = () => {
+    if (!user) {
+      router.push("/register");
+      return;
+    }
+
+    // Redirect based on role
+    if (user.role === "SUPER_ADMIN" || user.role === "ADMIN") {
+      router.push("/admin/dashboard");
+    } else if (user.role === "COURIER") {
+      router.push("/courier/dashboard");
+    } else if (user.role === "MERCHANT") {
+      router.push("/merchant/dashboard/create-shipment");
+    } else {
+      router.push("/dashboard/create-shipment");
+    }
+  };
+
+  const handleTrackPackage = () => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+
+    // Redirect based on role
+    if (user.role === "SUPER_ADMIN" || user.role === "ADMIN") {
+      router.push("/admin/dashboard");
+    } else if (user.role === "COURIER") {
+      router.push("/courier/dashboard");
+    } else if (user.role === "MERCHANT") {
+      router.push("/merchant/dashboard");
+    } else {
+      router.push("/dashboard/track");
+    }
+  };
   return (
     <section className="relative pt-24 pb-20 overflow-hidden bg-gradient-to-br from-background via-secondary/30 to-background">
       {/* Background blobs */}
@@ -57,13 +99,11 @@ export default function HeroSection() {
             </p>
 
             <div className="flex flex-wrap gap-3">
-              <Button size="lg" className="gap-2" asChild>
-                <Link href="/register">
-                  Start Shipping Free <ArrowRight className="size-4" />
-                </Link>
+              <Button size="lg" className="gap-2" onClick={handleStartShipping}>
+                Start Shipping Free <ArrowRight className="size-4" />
               </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/login">Track a Package</Link>
+              <Button size="lg" variant="outline" onClick={handleTrackPackage}>
+                Track a Package
               </Button>
             </div>
 

@@ -53,7 +53,7 @@ export default function CTASection() {
               <Button
                 size="lg"
                 variant="outline"
-                className="gap-2 border-white/30 text-white hover:bg-white/10 font-semibold"
+                className="gap-2 border-white/30 hover:text-white hover:bg-white/10 font-semibold"
                 asChild
               >
                 <Link href="/register">

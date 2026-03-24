@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Package } from "lucide-react";
+import { Menu, X, User as UserIcon } from "lucide-react";
+import { useGetMe } from "@/hooks/queries";
+import { getDefaultDashboardRoute } from "@/lib/authUtils";
+import type { User } from "@/types/user.types";
+import Image from "next/image";
 
 const navLinks = [
   { label: "Features", href: "#features" },
@@ -14,14 +18,15 @@ const navLinks = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
+  const { data: userResponse, isLoading, isError } = useGetMe();
+  const user = (!isError && userResponse?.data ? userResponse.data : null) as User | null;
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-bold text-xl text-primary">
-          <Package className="size-6" />
-          SwiftShip
+          <Image src="/swiftship-logo.png" alt="SwiftShip" width={128} height={32} className="h-8 w-auto" />
         </Link>
 
         {/* Desktop nav */}
@@ -39,12 +44,28 @@ export default function Navbar() {
 
         {/* CTA */}
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/login">Sign In</Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link href="/register">Get Started</Link>
-          </Button>
+          {isLoading ? (
+            <div className="h-9 w-32 bg-muted animate-pulse rounded-md" />
+          ) : user ? (
+            <>
+              <div className="flex items-center gap-2 text-sm">
+                <UserIcon className="size-4" />
+                <span className="font-medium">{user.name}</span>
+              </div>
+              <Button size="sm" asChild>
+                <Link href={getDefaultDashboardRoute(user.role)}>Dashboard</Link>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/login">Sign In</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link href="/register">Get Started</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -71,12 +92,28 @@ export default function Navbar() {
             </a>
           ))}
           <div className="flex flex-col gap-2 pt-2 border-t border-border">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/login">Sign In</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link href="/register">Get Started</Link>
-            </Button>
+            {isLoading ? (
+              <div className="h-9 bg-muted animate-pulse rounded-md" />
+            ) : user ? (
+              <>
+                <div className="flex items-center gap-2 text-sm py-2">
+                  <UserIcon className="size-4" />
+                  <span className="font-medium">{user.name}</span>
+                </div>
+                <Button size="sm" asChild>
+                  <Link href={getDefaultDashboardRoute(user.role)}>Dashboard</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" asChild>
+                  <Link href="/login">Sign In</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link href="/register">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}
