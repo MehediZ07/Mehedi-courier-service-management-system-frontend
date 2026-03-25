@@ -34,6 +34,8 @@ export const adminNavItems: NavSection[] = [
         title: "Operations",
         items: [
             { title: "Shipments", href: "/admin/dashboard/shipments-management", icon: "Package" },
+            { title: "Track Shipment", href: "/admin/dashboard/track-shipment", icon: "MapPin" },
+            { title: "Hubs", href: "/admin/dashboard/hubs-management", icon: "Warehouse" },
             { title: "Payments", href: "/admin/dashboard/payments-management", icon: "CreditCard" },
             { title: "Pricing", href: "/admin/dashboard/pricing-management", icon: "Tag" },
             { title: "Notifications", href: "/admin/dashboard/notifications", icon: "Bell" },
@@ -45,8 +47,10 @@ export const courierNavItems: NavSection[] = [
     {
         title: "Deliveries",
         items: [
-            { title: "Available Shipments", href: "/courier/dashboard/available-shipments", icon: "PackageSearch" },
-            { title: "My Deliveries", href: "/courier/dashboard/my-deliveries", icon: "PackageCheck" },
+            { title: "Available Legs", href: "/courier/dashboard/available-legs", icon: "PackageSearch" },
+            { title: "My Active Legs", href: "/courier/dashboard/my-active-legs", icon: "PackageCheck" },
+            { title: "Delivery History", href: "/courier/dashboard/delivery-history", icon: "History" },
+            { title: "Track Shipment", href: "/courier/dashboard/track-shipment", icon: "MapPin" },
         ],
     },
     {
@@ -64,6 +68,7 @@ export const merchantNavItems: NavSection[] = [
         items: [
             { title: "My Shipments", href: "/merchant/dashboard/my-shipments", icon: "Package" },
             { title: "Create Shipment", href: "/merchant/dashboard/create-shipment", icon: "PackagePlus" },
+            { title: "Track Shipment", href: "/merchant/dashboard/track-shipment", icon: "MapPin" },
         ],
     },
     {

@@ -10,6 +10,10 @@ export async function getMyCourierProfile() {
     return clientHttpClient.get<ApiResponse<Courier>>("/couriers/my-profile");
 }
 
+export async function updateMyCourierProfile(payload: Partial<UpdateCourierPayload>) {
+    return clientHttpClient.patch<ApiResponse<Courier>>("/couriers/my-profile", payload);
+}
+
 export async function getCourierById(id: string) {
     return clientHttpClient.get<ApiResponse<Courier>>(`/couriers/${id}`);
 }

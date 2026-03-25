@@ -14,3 +14,13 @@ export interface Notification {
         email: string;
     };
 }
+
+export interface NotificationQueryData {
+    data: Notification[];
+    meta?: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}

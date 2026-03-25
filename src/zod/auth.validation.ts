@@ -22,6 +22,7 @@ export const registerCourierSchema = z.object({
         error: "Select a valid vehicle type",
     }),
     licenseNumber: z.string().min(1, "License number is required"),
+    city: z.string().min(1, "City is required"),
 });
 
 export const changePasswordSchema = z

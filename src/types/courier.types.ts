@@ -8,6 +8,7 @@ export interface Courier {
     userId: string;
     vehicleType: VehicleType;
     licenseNumber: string;
+    city?: string;
     availability: boolean;
     approvalStatus: ApprovalStatus;
     totalEarnings: number;
@@ -19,6 +20,7 @@ export interface Courier {
 export interface UpdateCourierPayload {
     vehicleType?: VehicleType;
     licenseNumber?: string;
+    city?: string;
     availability?: boolean;
 }
 

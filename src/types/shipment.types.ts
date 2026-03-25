@@ -1,5 +1,6 @@
 import { Courier } from "./courier.types";
 import { User } from "./user.types";
+import { DeliveryType, ShipmentLeg } from "./shipmentLeg.types";
 
 export type RegionType = "LOCAL" | "NATIONAL" | "INTERNATIONAL";
 export type ShipmentStatus =
@@ -58,8 +59,10 @@ export interface Shipment {
     courierId?: string;
     pickupAddress: string;
     pickupCity: string;
+    pickupPhone: string;
     deliveryAddress: string;
     deliveryCity: string;
+    deliveryPhone: string;
     packageType: string;
     weight: number;
     priority: Priority;
@@ -67,12 +70,18 @@ export interface Shipment {
     paymentStatus: PaymentStatus;
     proofOfDelivery?: string;
     note?: string;
+    
+    // Hub-based delivery fields
+    deliveryType?: DeliveryType;
+    currentLegId?: string;
+    
     createdAt: string;
     updatedAt: string;
     sender?: User;
     courier?: Courier;
     pricing?: ShipmentPricing;
     events?: ShipmentEvent[];
+    legs?: ShipmentLeg[];
 }
 
 export interface CreateShipmentPayload {
