@@ -10,17 +10,25 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RegisterCourierInput, registerCourierSchema } from "@/zod/auth.validation";
 import { useForm } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
-import { Eye, EyeOff, Truck } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import Image from "next/image";
+import { getHubCities } from "@/services/hub.services";
 
 const VEHICLE_TYPES = ["BIKE", "BICYCLE", "CAR", "VAN", "TRUCK"] as const;
 
 const RegisterCourierForm = () => {
     const [serverError, setServerError] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
+
+    const { data: citiesData, isLoading: citiesLoading } = useQuery({
+        queryKey: ["hub-cities"],
+        queryFn: () => getHubCities(),
+    });
+
+    const cities = citiesData?.data ?? [];
 
     const { mutateAsync, isPending } = useMutation({
         mutationFn: (payload: RegisterCourierInput) => registerCourierAction(payload),
@@ -34,6 +42,7 @@ const RegisterCourierForm = () => {
             phone: "",
             vehicleType: "" as RegisterCourierInput["vehicleType"],
             licenseNumber: "",
+            city: "",
         },
         onSubmit: async ({ value }) => {
             setServerError(null);
@@ -144,6 +153,38 @@ const RegisterCourierForm = () => {
                     >
                         {(field) => (
                             <AppField field={field} label="License Number" placeholder="Enter your license number" />
+                        )}
+                    </form.Field>
+
+                    <form.Field
+                        name="city"
+                        validators={{ onChange: registerCourierSchema.shape.city }}
+                    >
+                        {(field) => (
+                            <div className="space-y-1.5">
+                                <Label htmlFor="city">Operating City</Label>
+                                <Select
+                                    value={field.state.value}
+                                    onValueChange={(val) => field.handleChange(val)}
+                                    disabled={citiesLoading}
+                                >
+                                    <SelectTrigger id="city">
+                                        <SelectValue placeholder={citiesLoading ? "Loading cities..." : "Select your city"} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {cities.map((city) => (
+                                            <SelectItem key={city} value={city}>
+                                                {city}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {field.state.meta.isTouched && field.state.meta.errors.length > 0 && (
+                                    <p className="text-sm text-destructive">
+                                        {String(field.state.meta.errors[0])}
+                                    </p>
+                                )}
+                            </div>
                         )}
                     </form.Field>
 

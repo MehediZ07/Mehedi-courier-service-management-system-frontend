@@ -41,11 +41,14 @@ const NotificationDropdown = () => {
     const { mutate: markRead, isPending } = useMutation({
         mutationFn: (id: string) => markNotificationAsRead(id),
         onSuccess: () => {
+            toast.success("Notification marked as read");
+            // Immediately refetch to get updated data from backend
             queryClient.invalidateQueries({ queryKey: ["notifications-dropdown"] });
             queryClient.invalidateQueries({ queryKey: ["notifications"] });
-            toast.success("Notification marked as read");
         },
-        onError: () => toast.error("Failed to mark notification as read"),
+        onError: () => {
+            toast.error("Failed to mark notification as read");
+        },
     });
 
     const notifications: Notification[] = data?.data ?? [];

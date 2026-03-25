@@ -1,8 +1,10 @@
 "use client";
 
 import { trackShipment } from "@/services/shipment.services";
+import { getShipmentLegs } from "@/services/shipmentLeg.services";
 import { Shipment } from "@/types/shipment.types";
-import { useMutation } from "@tanstack/react-query";
+import { ShipmentLeg } from "@/types/shipmentLeg.types";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,14 @@ export default function TrackShipment() {
         onSuccess: (res) => setResult(res.data),
         onError: () => setResult(null),
     });
+
+    const { data: legsData } = useQuery({
+        queryKey: ["shipment-legs", result?.id],
+        queryFn: () => getShipmentLegs(result!.id),
+        enabled: !!result?.id && result?.deliveryType === "HUB_BASED",
+    });
+
+    const legs = legsData?.data ?? [];
 
     return (
         <div className="space-y-6">
@@ -74,6 +84,16 @@ export default function TrackShipment() {
                             </div>
                         </div>
 
+                        {result.deliveryType && (
+                            <>
+                                <Separator />
+                                <div>
+                                    <p className="text-muted-foreground">Delivery Type</p>
+                                    <Badge variant="outline">{result.deliveryType}</Badge>
+                                </div>
+                            </>
+                        )}
+
                         {result.courier && (
                             <>
                                 <Separator />
@@ -81,6 +101,40 @@ export default function TrackShipment() {
                                     <p className="text-muted-foreground">Courier</p>
                                     <p className="font-medium">{result.courier.user?.name}</p>
                                     <p className="text-xs text-muted-foreground">{result.courier.user?.phone}</p>
+                                </div>
+                            </>
+                        )}
+
+                        {legs.length > 0 && (
+                            <>
+                                <Separator />
+                                <div>
+                                    <p className="text-muted-foreground mb-2">Multi-Leg Journey</p>
+                                    <div className="space-y-3">
+                                        {legs.map((leg: ShipmentLeg, idx: number) => (
+                                            <div key={leg.id} className="flex items-start gap-3 p-3 border rounded-md">
+                                                <div className="mt-1 h-6 w-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">
+                                                    {idx + 1}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <Badge variant="outline">{leg.legType}</Badge>
+                                                        <Badge>{leg.status}</Badge>
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {leg.originType === "HUB" ? leg.originHub?.name : leg.originAddress}
+                                                        {" → "}
+                                                        {leg.destType === "HUB" ? leg.destHub?.name : leg.destAddress}
+                                                    </p>
+                                                    {leg.courier && (
+                                                        <p className="text-xs text-muted-foreground mt-1">
+                                                            Courier: {leg.courier.user?.name}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </>
                         )}

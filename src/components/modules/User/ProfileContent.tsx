@@ -4,11 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User } from "@/types/user.types";
 import { useState, useRef } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { uploadProfileImage } from "@/services/user.services";
+import { getMyCourierProfile, updateMyCourierProfile } from "@/services/courier.services";
+import { getHubCities } from "@/services/hub.services";
 import { toast } from "sonner";
-import { Camera, Loader2 } from "lucide-react";
+import { Camera, Loader2, Edit2 } from "lucide-react";
 import Image from "next/image";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 interface ProfileContentProps {
     user: User;
@@ -16,8 +22,25 @@ interface ProfileContentProps {
 
 export default function ProfileContent({ user }: ProfileContentProps) {
     const [previewUrl, setPreviewUrl] = useState<string | null>(user.profileImage || null);
+    const [editCity, setEditCity] = useState(false);
+    const [selectedCity, setSelectedCity] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
     const queryClient = useQueryClient();
+
+    const { data: courierData } = useQuery({
+        queryKey: ["courier-profile", user.id],
+        queryFn: () => getMyCourierProfile(),
+        enabled: user.role === "COURIER",
+    });
+
+    const { data: citiesData } = useQuery({
+        queryKey: ["hub-cities"],
+        queryFn: () => getHubCities(),
+        enabled: user.role === "COURIER",
+    });
+
+    const cities = citiesData?.data ?? [];
+    const courier = courierData?.data;
 
     const { mutate: uploadImage, isPending } = useMutation({
         mutationFn: (file: File) => uploadProfileImage(user.id, file),
@@ -28,6 +51,18 @@ export default function ProfileContent({ user }: ProfileContentProps) {
         },
         onError: (error: Error) => {
             toast.error(error.message || "Failed to upload image");
+        },
+    });
+
+    const { mutate: updateCity, isPending: isUpdatingCity } = useMutation({
+        mutationFn: (city: string) => updateMyCourierProfile({ city }),
+        onSuccess: () => {
+            toast.success("City updated successfully");
+            queryClient.invalidateQueries({ queryKey: ["courier-profile"] });
+            setEditCity(false);
+        },
+        onError: (error: Error) => {
+            toast.error(error.message || "Failed to update city");
         },
     });
 
@@ -139,8 +174,86 @@ export default function ProfileContent({ user }: ProfileContentProps) {
                         <span className="text-muted-foreground">Member since</span>
                         <span>{new Date(user.createdAt).toLocaleDateString()}</span>
                     </div>
+
+                    {user.role === "COURIER" && courier && (
+                        <>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Vehicle Type</span>
+                                <Badge variant="outline">{courier.vehicleType}</Badge>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">License Number</span>
+                                <span>{courier.licenseNumber}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">City</span>
+                                <div className="flex items-center gap-2">
+                                    <span>{courier.city || "Not set"}</span>
+                                    <button
+                                        onClick={() => {
+                                            setSelectedCity(courier.city || "");
+                                            setEditCity(true);
+                                        }}
+                                        className="h-6 w-6 rounded-full hover:bg-accent flex items-center justify-center"
+                                        title="Edit city"
+                                    >
+                                        <Edit2 className="h-3 w-3" />
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Approval Status</span>
+                                <Badge variant={courier.approvalStatus === "APPROVED" ? "default" : courier.approvalStatus === "PENDING" ? "secondary" : "destructive"}>
+                                    {courier.approvalStatus}
+                                </Badge>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Availability</span>
+                                <Badge variant={courier.availability ? "default" : "secondary"}>
+                                    {courier.availability ? "Available" : "Unavailable"}
+                                </Badge>
+                            </div>
+                        </>
+                    )}
                 </CardContent>
             </Card>
+
+            <Dialog open={editCity} onOpenChange={setEditCity}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Update City</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>City</Label>
+                            <Select value={selectedCity} onValueChange={setSelectedCity}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select your city" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {cities.map((city) => (
+                                        <SelectItem key={city} value={city}>
+                                            {city}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={() => setEditCity(false)}>
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={() => updateCity(selectedCity)}
+                                disabled={!selectedCity || isUpdatingCity}
+                            >
+                                {isUpdatingCity && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                                Save
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             <Card>
                 <CardHeader>

@@ -17,8 +17,10 @@ import DataTableSearch from "./DataTableSearch";
 
 interface DataTableActions<TData> {
     onView ?: (data : TData) => void;
-    onEdit ?: (data : TData) => void;
+    onEdit ?: (data : TData) => void | undefined;
     onDelete ?: (data : TData) => void;
+    canEdit ?: (data : TData) => boolean;
+    canDelete ?: (data : TData) => boolean;
 }
 
 interface DataTableProps<TData> {
@@ -93,7 +95,7 @@ const DataTable = <TData,>({ data = [] as TData[], columns, actions, toolbarActi
                             }
 
                             {
-                                actions.onEdit && (
+                                actions.onEdit && (!actions.canEdit || actions.canEdit(rowData)) && (
                                     <DropdownMenuItem onClick={() => actions.onEdit?.(rowData)}>
                                         Edit
                                     </DropdownMenuItem>
@@ -101,7 +103,7 @@ const DataTable = <TData,>({ data = [] as TData[], columns, actions, toolbarActi
                             }
 
                             {
-                                actions.onDelete && (
+                                actions.onDelete && (!actions.canDelete || actions.canDelete(rowData)) && (
                                     <DropdownMenuItem onClick={() => actions.onDelete?.(rowData)}>
                                         Delete
                                     </DropdownMenuItem>

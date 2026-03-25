@@ -72,16 +72,32 @@ export default function NotificationsView() {
         queryFn: () => getMyNotifications(queryParams),
     });
 
-    const { mutate: markRead } = useMutation({
+    const { mutate: markRead, isPending: isMarkingRead } = useMutation({
         mutationFn: (id: string) => markNotificationAsRead(id),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
-        onError: (e: Error) => toast.error(e.message),
+        onSuccess: () => {
+            toast.success("Notification marked as read");
+            // Immediately refetch to get updated data from backend
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });
+            queryClient.invalidateQueries({ queryKey: ["notifications-dropdown"] });
+        },
+        onError: () => {
+            toast.error("Failed to mark notification as read");
+        },
     });
 
     const { mutate: markAll, isPending: isMarkingAll } = useMutation({
         mutationFn: markAllNotificationsAsRead,
-        onSuccess: () => { toast.success("All notifications marked as read"); queryClient.invalidateQueries({ queryKey: ["notifications"] }); },
-        onError: (e: Error) => toast.error(e.message),
+        onSuccess: () => { 
+            toast.success("All notifications marked as read");
+            // Invalidate after a short delay
+            setTimeout(() => {
+                queryClient.invalidateQueries({ queryKey: ["notifications"] }); 
+                queryClient.invalidateQueries({ queryKey: ["notifications-dropdown"] });
+            }, 100);
+        },
+        onError: () => {
+            toast.error("Failed to mark all notifications as read");
+        },
     });
 
     const notifications: Notification[] = data?.data ?? [];
@@ -96,7 +112,12 @@ export default function NotificationsView() {
             enableSorting: false,
             cell: ({ row }) =>
                 !row.original.readStatus ? (
-                    <Button size="sm" variant="ghost" onClick={() => markRead(row.original.id)}>
+                    <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => markRead(row.original.id)}
+                        disabled={isMarkingRead}
+                    >
                         Mark Read
                     </Button>
                 ) : null,
