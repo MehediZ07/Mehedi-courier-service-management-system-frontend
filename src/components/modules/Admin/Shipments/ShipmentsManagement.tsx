@@ -58,6 +58,7 @@ export default function ShipmentsManagement() {
     const searchParams = useSearchParams();
     const queryClient = useQueryClient();
     const [selected, setSelected] = useState<Shipment | null>(null);
+    const [viewShipment, setViewShipment] = useState<Shipment | null>(null);
     const [courierId, setCourierId] = useState("");
 
     const { optimisticSortingState, optimisticPaginationState, isRouteRefreshPending, updateParams, handleSortingChange, handlePaginationChange } =
@@ -126,7 +127,11 @@ export default function ShipmentsManagement() {
                 }}
                 sorting={{ state: optimisticSortingState, onSortingChange: handleSortingChange }}
                 pagination={{ state: optimisticPaginationState, onPaginationChange: handlePaginationChange }}
-                actions={{ onEdit: openAssign }}
+                actions={{ 
+                    onEdit: openAssign,
+                    canEdit: (s) => s.status === "PENDING",
+                    onView: setViewShipment
+                }}
             />
 
             <Dialog open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
@@ -147,7 +152,7 @@ export default function ShipmentsManagement() {
                                     <SelectTrigger><SelectValue placeholder="Choose a courier..." /></SelectTrigger>
                                     <SelectContent>
                                         {couriers.map((c) => (
-                                            <SelectItem key={c.id} value={c.id}>{c.user?.name ?? c.id}</SelectItem>
+                                            <SelectItem key={c.id} value={c.id}>{c.user?.name ?? c.id} - {c.vehicleType}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -159,6 +164,85 @@ export default function ShipmentsManagement() {
                             >
                                 {isPending ? "Assigning..." : "Assign Courier"}
                             </Button>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={!!viewShipment} onOpenChange={(o) => !o && setViewShipment(null)}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Shipment Details — {viewShipment?.trackingNumber}</DialogTitle>
+                    </DialogHeader>
+                    {viewShipment && (
+                        <div className="space-y-4 pt-2">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-sm font-medium text-muted-foreground">Status</p>
+                                    <StatusBadgeCell status={viewShipment.status} />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-muted-foreground">Priority</p>
+                                    <Badge variant={viewShipment.priority === "EXPRESS" ? "default" : "secondary"}>
+                                        {viewShipment.priority}
+                                    </Badge>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <p className="text-sm font-semibold">Pickup Details</p>
+                                <div className="text-sm space-y-1 pl-2">
+                                    <p><span className="text-muted-foreground">Address:</span> {viewShipment.pickupAddress}</p>
+                                    <p><span className="text-muted-foreground">City:</span> {viewShipment.pickupCity}</p>
+                                    <p><span className="text-muted-foreground">Phone:</span> {viewShipment.pickupPhone}</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <p className="text-sm font-semibold">Delivery Details</p>
+                                <div className="text-sm space-y-1 pl-2">
+                                    <p><span className="text-muted-foreground">Address:</span> {viewShipment.deliveryAddress}</p>
+                                    <p><span className="text-muted-foreground">City:</span> {viewShipment.deliveryCity}</p>
+                                    <p><span className="text-muted-foreground">Phone:</span> {viewShipment.deliveryPhone}</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <p className="text-sm font-medium text-muted-foreground">Package Type</p>
+                                    <p className="text-sm">{viewShipment.packageType}</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm font-medium text-muted-foreground">Weight</p>
+                                    <p className="text-sm">{viewShipment.weight} kg</p>
+                                </div>
+                            </div>
+
+                            {viewShipment.note && (
+                                <div>
+                                    <p className="text-sm font-medium text-muted-foreground">Notes</p>
+                                    <p className="text-sm">{viewShipment.note}</p>
+                                </div>
+                            )}
+
+                            {viewShipment.courier && (
+                                <div>
+                                    <p className="text-sm font-medium text-muted-foreground">Assigned Courier</p>
+                                    <p className="text-sm">{viewShipment.courier.user?.name} - {viewShipment.courier.user?.phone}</p>
+                                </div>
+                            )}
+
+                            {viewShipment.pricing && (
+                                <div>
+                                    <p className="text-sm font-medium text-muted-foreground">Pricing</p>
+                                    <div className="text-sm space-y-1 pl-2">
+                                        <p>Base: {viewShipment.pricing.basePrice} BDT</p>
+                                        <p>Weight Charge: {viewShipment.pricing.weightCharge} BDT</p>
+                                        <p>Priority Charge: {viewShipment.pricing.priorityCharge} BDT</p>
+                                        <p className="font-semibold">Total: {viewShipment.pricing.totalPrice} BDT</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </DialogContent>
