@@ -5,6 +5,7 @@ export interface Merchant {
     userId: string;
     companyName: string;
     address: string;
+    pendingSettlement: number;
     createdAt: string;
     updatedAt: string;
     user?: User;

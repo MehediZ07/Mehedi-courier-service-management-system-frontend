@@ -25,9 +25,9 @@ const DashboardSidebarContent = ({dashboardHome, navItems, userInfo} : Dashboard
   return (
     <div className="hidden md:flex h-full w-64 flex-col border-r bg-card overflow-y-auto">
       {/* Logo / Brand */}
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-20 items-center border-b px-6">
         <Link href={dashboardHome}>
-          <Image src="/swiftship-logo.png" alt="SwiftShip" width={128} height={32} className="h-8 w-auto" />
+          <Image src="/swiftship-logo.png" alt="SwiftShip" width={128} height={32} className="h-12 my-2 w-auto" />
         </Link>
       </div>
 

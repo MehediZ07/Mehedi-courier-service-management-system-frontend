@@ -14,6 +14,22 @@ export async function getShipmentLegs(shipmentId: string) {
     return clientHttpClient.get<ApiResponse<ShipmentLeg[]>>(`/legs/shipment/${shipmentId}`);
 }
 
+export async function getAllLegs(params?: Record<string, unknown>) {
+    return clientHttpClient.get<PaginatedApiResponse<ShipmentLeg>>("/legs", { params });
+}
+
+export async function assignCourierToLeg(legId: string, courierId: string) {
+    return clientHttpClient.post<ApiResponse<ShipmentLeg>>(`/legs/${legId}/assign`, { courierId });
+}
+
+export async function releaseHubTransfer(payload: { legIds: string[]; note?: string }) {
+    return clientHttpClient.post<ApiResponse<ShipmentLeg[]>>("/legs/hub-transfer/release", payload);
+}
+
+export async function confirmHubTransfer(payload: { legIds: string[]; note?: string }) {
+    return clientHttpClient.post<ApiResponse<ShipmentLeg[]>>("/legs/hub-transfer/confirm", payload);
+}
+
 export async function acceptLeg(id: string) {
     return clientHttpClient.post<ShipmentLeg>(`/legs/${id}/accept`, {});
 }

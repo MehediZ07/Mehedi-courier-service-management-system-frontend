@@ -71,25 +71,25 @@ export default function UsersManagement() {
     };
 
     const { data, isLoading } = useQuery({
-        queryKey: ["users", queryParams],
+        queryKey: ["users", "list", queryParams],
         queryFn: () => getAllUsers(queryParams),
     });
 
     const { mutate: changeStatus, isPending: isStatusPending } = useMutation({
         mutationFn: ({ id, status }: { id: string; status: UserStatus }) => updateUserStatus(id, { status }),
-        onSuccess: () => { toast.success("Status updated"); queryClient.invalidateQueries({ queryKey: ["users"] }); setSelectedUser(null); },
+        onSuccess: () => { toast.success("Status updated"); queryClient.invalidateQueries({ queryKey: ["users", "list"] }); setSelectedUser(null); },
         onError: (e: Error) => toast.error(e.message),
     });
 
     const { mutate: changeRole, isPending: isRolePending } = useMutation({
         mutationFn: ({ id, role }: { id: string; role: UserRole }) => updateUserRole(id, { role }),
-        onSuccess: () => { toast.success("Role updated"); queryClient.invalidateQueries({ queryKey: ["users"] }); setSelectedUser(null); },
+        onSuccess: () => { toast.success("Role updated"); queryClient.invalidateQueries({ queryKey: ["users", "list"] }); setSelectedUser(null); },
         onError: (e: Error) => toast.error(e.message),
     });
 
     const { mutate: removeUser } = useMutation({
         mutationFn: (id: string) => deleteUser(id),
-        onSuccess: () => { toast.success("User deleted"); queryClient.invalidateQueries({ queryKey: ["users"] }); },
+        onSuccess: () => { toast.success("User deleted"); queryClient.invalidateQueries({ queryKey: ["users", "list"] }); },
         onError: (e: Error) => toast.error(e.message),
     });
 

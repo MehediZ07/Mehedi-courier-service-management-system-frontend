@@ -10,6 +10,7 @@ export type ShipmentStatus =
     | "IN_TRANSIT"
     | "OUT_FOR_DELIVERY"
     | "DELIVERED"
+    | "CANCELLED"
     | "FAILED"
     | "RETURNED";
 
@@ -51,6 +52,17 @@ export interface ShipmentEvent {
     createdAt: string;
 }
 
+export interface ShipmentPayment {
+    id: string;
+    shipmentId: string;
+    method: PaymentMethod;
+    status: PaymentStatus;
+    amount: number;
+    transactionId?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export interface Shipment {
     id: string;
     trackingNumber: string;
@@ -65,6 +77,7 @@ export interface Shipment {
     deliveryPhone: string;
     packageType: string;
     weight: number;
+    productPrice: number;
     priority: Priority;
     status: ShipmentStatus;
     paymentStatus: PaymentStatus;
@@ -80,6 +93,7 @@ export interface Shipment {
     sender?: User;
     courier?: Courier;
     pricing?: ShipmentPricing;
+    payment?: ShipmentPayment;
     events?: ShipmentEvent[];
     legs?: ShipmentLeg[];
 }
@@ -93,6 +107,7 @@ export interface CreateShipmentPayload {
     deliveryPhone: string;
     packageType: string;
     weight: number;
+    productPrice?: number;
     priority?: Priority;
     paymentMethod: PaymentMethod;
     note?: string;

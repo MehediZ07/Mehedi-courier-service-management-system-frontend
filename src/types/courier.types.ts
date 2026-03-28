@@ -12,6 +12,7 @@ export interface Courier {
     availability: boolean;
     approvalStatus: ApprovalStatus;
     totalEarnings: number;
+    pendingCOD: number;
     createdAt: string;
     updatedAt: string;
     user: User;

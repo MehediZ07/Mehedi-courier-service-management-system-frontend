@@ -5,7 +5,7 @@ import StatusBadgeCell from "@/components/shared/cell/StatusBadgeCell";
 import { useServerManagedDataTable } from "@/hooks/useServerManagedDataTable";
 import { useServerManagedDataTableSearch } from "@/hooks/useServerManagedDataTableSearch";
 import { useServerManagedDataTableFilters, serverManagedFilter } from "@/hooks/useServerManagedDataTableFilters";
-import { getAllCouriers, updateCourier, deleteCourier } from "@/services/courier.services";
+import { getAllCouriers, updateCourier, approveCourier, deleteCourier } from "@/services/courier.services";
 import { Courier, VehicleType } from "@/types/courier.types";
 import { ColumnDef } from "@tanstack/react-table";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,18 +15,22 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { useState, useMemo } from "react";
+import { getHubCities } from "@/services/hub.services";
 
 const VEHICLE_TYPES: VehicleType[] = ["BIKE", "BICYCLE", "CAR", "VAN", "TRUCK"];
 
 const FILTER_DEFINITIONS = [
     serverManagedFilter.single("vehicleType"),
     serverManagedFilter.single("availability"),
+    serverManagedFilter.single("city"),
 ];
 
 const columns: ColumnDef<Courier>[] = [
     { accessorKey: "user.name", header: "Name", cell: ({ row }) => row.original.user?.name ?? "—" },
     { accessorKey: "user.email", header: "Email", cell: ({ row }) => row.original.user?.email ?? "—" },
+    { accessorKey: "city", header: "City" },
     {
         accessorKey: "vehicleType",
         header: "Vehicle",
@@ -54,6 +58,16 @@ export default function CouriersManagement() {
     const queryClient = useQueryClient();
     const [selected, setSelected] = useState<Courier | null>(null);
 
+    const { data: hubCitiesData } = useQuery({
+        queryKey: ["hub-cities"],
+        queryFn: async () => {
+            const res = await getHubCities();
+            return res.data;
+        },
+    });
+
+    const hubCities = hubCitiesData || [];
+
     const { optimisticSortingState, optimisticPaginationState, isRouteRefreshPending, updateParams, handleSortingChange, handlePaginationChange } =
         useServerManagedDataTable({ searchParams });
 
@@ -69,23 +83,31 @@ export default function CouriersManagement() {
         ...(searchTermFromUrl && { searchTerm: searchTermFromUrl }),
         ...(filterValues.vehicleType && { vehicleType: filterValues.vehicleType }),
         ...(filterValues.availability && { availability: filterValues.availability }),
+        ...(filterValues.city && { city: filterValues.city }),
     };
 
     const { data, isLoading } = useQuery({
-        queryKey: ["couriers", queryParams],
+        queryKey: ["couriers", "list", queryParams],
         queryFn: () => getAllCouriers(queryParams),
     });
 
     const { mutate: editCourier, isPending } = useMutation({
         mutationFn: ({ id, payload }: { id: string; payload: { vehicleType?: VehicleType; availability?: boolean } }) =>
             updateCourier(id, payload),
-        onSuccess: () => { toast.success("Courier updated"); queryClient.invalidateQueries({ queryKey: ["couriers"] }); setSelected(null); },
+        onSuccess: () => { toast.success("Courier updated"); queryClient.invalidateQueries({ queryKey: ["couriers", "list"] }); setSelected(null); },
+        onError: (e: Error) => toast.error(e.message),
+    });
+
+    const { mutate: approve, isPending: isApproving } = useMutation({
+        mutationFn: ({ id, status }: { id: string; status: "APPROVED" | "REJECTED" }) =>
+            approveCourier(id, { approvalStatus: status }),
+        onSuccess: () => { toast.success("Approval status updated"); queryClient.invalidateQueries({ queryKey: ["couriers", "list"] }); setSelected(null); },
         onError: (e: Error) => toast.error(e.message),
     });
 
     const { mutate: removeCourier } = useMutation({
         mutationFn: (id: string) => deleteCourier(id),
-        onSuccess: () => { toast.success("Courier deleted"); queryClient.invalidateQueries({ queryKey: ["couriers"] }); },
+        onSuccess: () => { toast.success("Courier deleted"); queryClient.invalidateQueries({ queryKey: ["couriers", "list"] }); },
         onError: (e: Error) => toast.error(e.message),
     });
 
@@ -110,6 +132,7 @@ export default function CouriersManagement() {
                     configs: [
                         { id: "vehicleType", label: "Vehicle", type: "single-select", options: VEHICLE_TYPES.map((v) => ({ label: v, value: v })) },
                         { id: "availability", label: "Available", type: "single-select", options: [{ label: "Yes", value: "true" }, { label: "No", value: "false" }] },
+                        { id: "city", label: "City", type: "single-select", options: hubCities.map((city) => ({ label: city, value: city })) },
                     ],
                     values: filterValues,
                     onFilterChange: handleFilterChange,
@@ -127,6 +150,33 @@ export default function CouriersManagement() {
                     </DialogHeader>
                     {selected && (
                         <div className="space-y-4 pt-2">
+                            <div className="space-y-2">
+                                <Label>Approval Status</Label>
+                                <div className="flex gap-2">
+                                    <Button
+                                        size="sm"
+                                        variant={selected.approvalStatus === "APPROVED" ? "default" : "outline"}
+                                        disabled={isApproving || selected.approvalStatus === "APPROVED"}
+                                        onClick={() => approve({ id: selected.id, status: "APPROVED" })}
+                                        className="flex-1"
+                                    >
+                                        {isApproving ? "Processing..." : "Approve"}
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant={selected.approvalStatus === "REJECTED" ? "destructive" : "outline"}
+                                        disabled={isApproving || selected.approvalStatus === "REJECTED"}
+                                        onClick={() => approve({ id: selected.id, status: "REJECTED" })}
+                                        className="flex-1"
+                                    >
+                                        Reject
+                                    </Button>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Current: <Badge variant="outline">{selected.approvalStatus}</Badge>
+                                </p>
+                            </div>
+
                             <div className="space-y-1.5">
                                 <Label>Vehicle Type</Label>
                                 <Select

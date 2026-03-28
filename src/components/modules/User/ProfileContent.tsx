@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { User } from "@/types/user.types";
+import { ApiResponse } from "@/types/api.types";
 import { useState, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { uploadProfileImage } from "@/services/user.services";
@@ -15,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 interface ProfileContentProps {
     user: User;
@@ -26,6 +28,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
     const [selectedCity, setSelectedCity] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
     const queryClient = useQueryClient();
+    const router = useRouter();
 
     const { data: courierData } = useQuery({
         queryKey: ["courier-profile", user.id],
@@ -42,12 +45,13 @@ export default function ProfileContent({ user }: ProfileContentProps) {
     const cities = citiesData?.data ?? [];
     const courier = courierData?.data;
 
-    const { mutate: uploadImage, isPending } = useMutation({
+    const { mutate: uploadImage, isPending } = useMutation<ApiResponse<User>, Error, File>({
         mutationFn: (file: File) => uploadProfileImage(user.id, file),
-        onSuccess: (data) => {
+        onSuccess: (response) => {
             toast.success("Profile image updated successfully");
-            setPreviewUrl(data.data.profileImage);
+            setPreviewUrl(response.data.profileImage || null);
             queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+            router.refresh(); // Refresh server component data
         },
         onError: (error: Error) => {
             toast.error(error.message || "Failed to upload image");

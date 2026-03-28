@@ -24,7 +24,7 @@ const DashboardMobileSidebar = ({dashboardHome, navItems, userInfo} : DashboardM
       {/* Logo / Brand */}
       <div className="flex h-16 items-center border-b px-6">
         <Link href={dashboardHome}>
-          <Image src="/swiftship-logo.png" alt="SwiftShip" width={128} height={32} className="h-8 w-auto" />
+          <Image src="/swiftship-logo.png" alt="SwiftShip" width={128} height={32} className="h-8 w-auto p-2" />
         </Link>
       </div>
 

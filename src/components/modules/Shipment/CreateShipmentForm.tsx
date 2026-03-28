@@ -1,12 +1,14 @@
 "use client";
 
 import { useForm } from "@tanstack/react-form";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { calculatePrice, createShipment } from "@/services/shipment.services";
 import { initiateStripePayment } from "@/services/payment.services";
+import { getHubCities } from "@/services/hub.services";
+import { useGetMe } from "@/hooks/useAuth";
 import { createShipmentSchema, CreateShipmentInput } from "@/zod/shipment.validation";
 import { Priority, PriceQuote } from "@/types/shipment.types";
 import AppField from "@/components/shared/form/AppField";
@@ -25,6 +27,17 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
     const [quote, setQuote] = useState<PriceQuote | null>(null);
     const [quoteError, setQuoteError] = useState<string | null>(null);
 
+    const { data: meData } = useGetMe();
+    const userRole = meData?.data?.role;
+    const isMerchant = userRole === "MERCHANT";
+
+    const { data: citiesData } = useQuery({
+        queryKey: ["hub-cities"],
+        queryFn: getHubCities,
+    });
+
+    const cities = citiesData?.data ?? [];
+
     const { mutateAsync: fetchQuote, isPending: isCalculating } = useMutation({
         mutationFn: calculatePrice,
         onSuccess: (res) => {
@@ -39,10 +52,6 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
 
     const { mutateAsync: submitShipment, isPending } = useMutation({
         mutationFn: createShipment,
-        onSuccess: () => {
-            toast.success("Shipment created successfully!");
-            router.push(redirectTo);
-        },
         onError: (err: Error) => toast.error(err.message),
     });
 
@@ -56,6 +65,7 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
             deliveryPhone: "",
             packageType: "Documents",
             weight: 1,
+            productPrice: 0,
             priority: "STANDARD" as Priority,
             paymentMethod: "COD" as "COD" | "STRIPE",
             note: "",
@@ -66,12 +76,9 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
             
             const payload = parsed.data as CreateShipmentInput;
             
-            // If Stripe payment, create shipment first then redirect to Stripe Checkout
             if (payload.paymentMethod === "STRIPE") {
-                // Trigger quote calculation if not already done
                 if (!quote) {
                     await triggerQuote();
-                    // Wait a bit for quote to be set
                     await new Promise(resolve => setTimeout(resolve, 500));
                 }
                 
@@ -83,20 +90,19 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
                 const shipmentRes = await submitShipment(payload);
                 if (!shipmentRes?.data) return;
                 
-                // Initiate Stripe payment and redirect
                 const paymentRes = await initiateStripePayment(shipmentRes.data.id, {
                     amount: quote.totalPrice,
                 });
                 
-                // Redirect to Stripe Checkout
                 if (paymentRes.data.url) {
                     window.location.replace(paymentRes.data.url);
                 } else {
                     toast.error("Failed to initiate payment");
                 }
             } else {
-                // COD - just create shipment
                 await submitShipment(payload);
+                toast.success("Shipment created successfully!");
+                router.push(redirectTo);
             }
         },
     });
@@ -148,12 +154,24 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
                         </form.Field>
                         <form.Field name="pickupCity">
                             {(field) => (
-                                <AppField
-                                    field={field}
-                                    label="Pickup City"
-                                    placeholder="Dhaka"
-                                    className="sm:col-span-1"
-                                />
+                                <div className="space-y-1.5">
+                                    <Label>Pickup City</Label>
+                                    <Select value={field.state.value} onValueChange={(v) => {
+                                        field.handleChange(v);
+                                        setTimeout(triggerQuote, 0);
+                                    }}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select city" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {cities.map((city) => (
+                                                <SelectItem key={city} value={city}>
+                                                    {city}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             )}
                         </form.Field>
                         <form.Field name="pickupPhone">
@@ -187,12 +205,24 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
                         </form.Field>
                         <form.Field name="deliveryCity">
                             {(field) => (
-                                <AppField
-                                    field={field}
-                                    label="Delivery City"
-                                    placeholder="Chittagong"
-                                    className="sm:col-span-1"
-                                />
+                                <div className="space-y-1.5">
+                                    <Label>Delivery City</Label>
+                                    <Select value={field.state.value} onValueChange={(v) => {
+                                        field.handleChange(v);
+                                        setTimeout(triggerQuote, 0);
+                                    }}>
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select city" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {cities.map((city) => (
+                                                <SelectItem key={city} value={city}>
+                                                    {city}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                             )}
                         </form.Field>
                         <form.Field name="deliveryPhone">
@@ -253,6 +283,27 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
                                 </div>
                             )}
                         </form.Field>
+
+                        {/* Product Price - Only for Merchants */}
+                        {isMerchant && (
+                            <form.Field name="productPrice">
+                                {(field) => (
+                                    <div className="space-y-1.5">
+                                        <Label>Product Price (BDT) - Optional</Label>
+                                        <input
+                                            type="number"
+                                            min={0}
+                                            step={0.01}
+                                            value={field.state.value || ''}
+                                            onChange={(e) => field.handleChange(e.target.value === '' ? 0 : Number(e.target.value))}
+                                            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                            placeholder="e.g. 500"
+                                        />
+                                        <p className="text-xs text-muted-foreground">COD = Product Price + Shipment Charge</p>
+                                    </div>
+                                )}
+                            </form.Field>
+                        )}
 
                         {/* Priority — triggers quote on change */}
                         <form.Field name="priority">
@@ -352,9 +403,21 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
                                     )}
                                     <Separator />
                                     <div className="flex justify-between font-semibold text-base">
-                                        <span>Total</span>
+                                        <span>Shipment Charge</span>
                                         <span className="text-primary">{quote.totalPrice.toFixed(2)} BDT</span>
                                     </div>
+                                    {form.getFieldValue && Number(form.getFieldValue("productPrice" as never)) > 0 && (
+                                        <>
+                                            <div className="flex justify-between">
+                                                <span className="text-muted-foreground">Product Price</span>
+                                                <span>{Number(form.getFieldValue("productPrice" as never)).toFixed(2)} BDT</span>
+                                            </div>
+                                            <div className="flex justify-between font-bold text-lg text-primary">
+                                                <span>Total COD Amount</span>
+                                                <span>{(quote.totalPrice + Number(form.getFieldValue("productPrice" as never))).toFixed(2)} BDT</span>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             )}
                         </CardContent>

@@ -33,6 +33,12 @@ export interface ShipmentLeg {
     deliveredAt?: string;
     estimatedAt?: string;
     note?: string;
+    
+    // Earnings and COD
+    courierEarning?: number;
+    codCollected?: boolean;
+    codAmount?: number;
+    
     createdAt: string;
     updatedAt: string;
     

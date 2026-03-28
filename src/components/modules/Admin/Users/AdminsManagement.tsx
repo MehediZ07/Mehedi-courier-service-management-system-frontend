@@ -76,7 +76,7 @@ export default function AdminsManagement() {
     }
 
     const { data, isLoading } = useQuery({
-        queryKey: ["admins", queryParams],
+        queryKey: ["admins", "list", queryParams],
         queryFn: () => getAllUsers(queryParams),
     });
 
@@ -85,13 +85,13 @@ export default function AdminsManagement() {
 
     const { mutate: changeStatus, isPending: isStatusPending } = useMutation({
         mutationFn: ({ id, status }: { id: string; status: UserStatus }) => updateUserStatus(id, { status }),
-        onSuccess: () => { toast.success("Status updated"); queryClient.invalidateQueries({ queryKey: ["admins"] }); setSelectedUser(null); },
+        onSuccess: () => { toast.success("Status updated"); queryClient.invalidateQueries({ queryKey: ["admins", "list"] }); setSelectedUser(null); },
         onError: (e: Error) => toast.error(e.message),
     });
 
     const { mutate: removeUser } = useMutation({
         mutationFn: (id: string) => deleteUser(id),
-        onSuccess: () => { toast.success("Admin deleted"); queryClient.invalidateQueries({ queryKey: ["admins"] }); },
+        onSuccess: () => { toast.success("Admin deleted"); queryClient.invalidateQueries({ queryKey: ["admins", "list"] }); },
         onError: (e: Error) => toast.error(e.message),
     });
 

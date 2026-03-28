@@ -88,7 +88,7 @@ const NotificationDropdown = () => {
                 <ScrollArea className="h-72">
                     {sortedNotifications.length > 0 ? (
                         sortedNotifications.map((n) => (
-                            <div key={n.id} className="flex items-start gap-2 p-3 hover:bg-accent border-b last:border-0">
+                            <div key={n.id} className="flex items-start gap-2 p-3 border-b last:border-0 transition-colors">
                                 <div className="flex-1 space-y-1">
                                     <p className={`text-sm leading-snug ${n.readStatus ? "text-muted-foreground opacity-70" : "font-medium"}`}>
                                         {n.message}
@@ -109,7 +109,7 @@ const NotificationDropdown = () => {
                                     <Button
                                         size="icon"
                                         variant="ghost"
-                                        className="h-8 w-8 shrink-0"
+                                        className="h-8 w-8 shrink-0 hover:bg-green-100 hover:text-green-700 dark:hover:bg-green-950 dark:hover:text-green-400 transition-colors cursor-pointer"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             markRead(n.id);

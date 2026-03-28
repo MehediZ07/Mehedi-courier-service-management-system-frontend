@@ -41,20 +41,20 @@ export default function MerchantsManagement() {
     };
 
     const { data, isLoading } = useQuery({
-        queryKey: ["merchants", queryParams],
+        queryKey: ["merchants", "list", queryParams],
         queryFn: () => getAllMerchants(queryParams),
     });
 
     const { mutate: editMerchant, isPending } = useMutation({
         mutationFn: ({ id, payload }: { id: string; payload: { companyName?: string; address?: string } }) =>
             updateMerchant(id, payload),
-        onSuccess: () => { toast.success("Merchant updated"); queryClient.invalidateQueries({ queryKey: ["merchants"] }); setSelected(null); },
+        onSuccess: () => { toast.success("Merchant updated"); queryClient.invalidateQueries({ queryKey: ["merchants", "list"] }); setSelected(null); },
         onError: (e: Error) => toast.error(e.message),
     });
 
     const { mutate: removeMerchant } = useMutation({
         mutationFn: (id: string) => deleteMerchant(id),
-        onSuccess: () => { toast.success("Merchant deleted"); queryClient.invalidateQueries({ queryKey: ["merchants"] }); },
+        onSuccess: () => { toast.success("Merchant deleted"); queryClient.invalidateQueries({ queryKey: ["merchants", "list"] }); },
         onError: (e: Error) => toast.error(e.message),
     });
 

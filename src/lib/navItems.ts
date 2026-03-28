@@ -34,9 +34,13 @@ export const adminNavItems: NavSection[] = [
         title: "Operations",
         items: [
             { title: "Shipments", href: "/admin/dashboard/shipments-management", icon: "Package" },
+            { title: "Legs Management", href: "/admin/dashboard/legs-management", icon: "Route" },
+            { title: "Hub Transfers", href: "/admin/dashboard/hub-transfers", icon: "ArrowRightLeft" },
             { title: "Track Shipment", href: "/admin/dashboard/track-shipment", icon: "MapPin" },
             { title: "Hubs", href: "/admin/dashboard/hubs-management", icon: "Warehouse" },
             { title: "Payments", href: "/admin/dashboard/payments-management", icon: "CreditCard" },
+            { title: "COD Settlement", href: "/admin/dashboard/cod-settlement", icon: "Banknote" },
+            { title: "Merchant Settlement", href: "/admin/dashboard/merchant-settlement", icon: "HandCoins" },
             { title: "Pricing", href: "/admin/dashboard/pricing-management", icon: "Tag" },
             { title: "Notifications", href: "/admin/dashboard/notifications", icon: "Bell" },
         ],
@@ -57,6 +61,7 @@ export const courierNavItems: NavSection[] = [
         title: "Account",
         items: [
             { title: "My Earnings", href: "/courier/dashboard/earnings", icon: "Wallet" },
+            { title: "COD Settlement", href: "/courier/dashboard/cod-settlement", icon: "Banknote" },
             { title: "Notifications", href: "/courier/dashboard/notifications", icon: "Bell" },
         ],
     },
@@ -74,6 +79,7 @@ export const merchantNavItems: NavSection[] = [
     {
         title: "Account",
         items: [
+            { title: "Settlement History", href: "/merchant/dashboard/settlement-history", icon: "HandCoins" },
             { title: "Notifications", href: "/merchant/dashboard/notifications", icon: "Bell" },
         ],
     },

@@ -2,13 +2,20 @@
 
 import DataTable from "@/components/shared/table/DataTable";
 import { useServerManagedDataTable } from "@/hooks/useServerManagedDataTable";
+import { useServerManagedDataTableSearch } from "@/hooks/useServerManagedDataTableSearch";
+import { useServerManagedDataTableFilters, serverManagedFilter } from "@/hooks/useServerManagedDataTableFilters";
 import { useGetMyCourierLegs } from "@/hooks/useShipmentLegs";
 import { ShipmentLeg } from "@/types/shipmentLeg.types";
 import { ColumnDef } from "@tanstack/react-table";
 import { useSearchParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useState } from "react";
+import { LegSticker } from "@/components/shared/LegSticker";
+import { useMemo, useState } from "react";
+
+const FILTER_DEFINITIONS = [
+    serverManagedFilter.single("legType"),
+];
 
 const columns: ColumnDef<ShipmentLeg>[] = [
     {
@@ -42,13 +49,20 @@ export default function DeliveryHistory() {
     const searchParams = useSearchParams();
     const [viewLeg, setViewLeg] = useState<ShipmentLeg | null>(null);
 
-    const { optimisticSortingState, optimisticPaginationState, isRouteRefreshPending, handleSortingChange, handlePaginationChange } =
+    const { optimisticSortingState, optimisticPaginationState, isRouteRefreshPending, updateParams, handleSortingChange, handlePaginationChange } =
         useServerManagedDataTable({ searchParams });
+
+    const { searchTermFromUrl, handleDebouncedSearchChange } = useServerManagedDataTableSearch({ searchParams, updateParams });
+
+    const filterDefs = useMemo(() => FILTER_DEFINITIONS, []);
+    const { filterValues, handleFilterChange, clearAllFilters } = useServerManagedDataTableFilters({ searchParams, definitions: filterDefs, updateParams });
 
     const queryParams = {
         page: optimisticPaginationState.pageIndex + 1,
         limit: optimisticPaginationState.pageSize,
         ...(optimisticSortingState[0] && { sortBy: optimisticSortingState[0].id, sortOrder: optimisticSortingState[0].desc ? "desc" : "asc" }),
+        ...(searchTermFromUrl && { searchTerm: searchTermFromUrl }),
+        ...(filterValues.legType && { legType: filterValues.legType }),
         status: "COMPLETED",
     };
 
@@ -70,6 +84,15 @@ export default function DeliveryHistory() {
                 isLoading={isLoading || isRouteRefreshPending}
                 emptyMessage="No completed deliveries yet."
                 meta={meta}
+                search={{ initialValue: searchTermFromUrl, placeholder: "Search by tracking number...", onDebouncedChange: handleDebouncedSearchChange }}
+                filters={{
+                    configs: [
+                        { id: "legType", label: "Type", type: "single-select", options: ["PICKUP", "HUB_TRANSFER", "DELIVERY"].map((t) => ({ label: t, value: t })) },
+                    ],
+                    values: filterValues,
+                    onFilterChange: handleFilterChange,
+                    onClearAll: clearAllFilters,
+                }}
                 sorting={{ state: optimisticSortingState, onSortingChange: handleSortingChange }}
                 pagination={{ state: optimisticPaginationState, onPaginationChange: handlePaginationChange }}
                 actions={{ onView: setViewLeg }}
@@ -78,7 +101,10 @@ export default function DeliveryHistory() {
             <Dialog open={!!viewLeg} onOpenChange={(o) => !o && setViewLeg(null)}>
                 <DialogContent className="max-w-2xl">
                     <DialogHeader>
-                        <DialogTitle>Delivery Details — {viewLeg?.shipment?.trackingNumber}</DialogTitle>
+                        <DialogTitle className="flex items-center justify-between">
+                            <span>Delivery Details — {viewLeg?.shipment?.trackingNumber}</span>
+                            {viewLeg && <LegSticker leg={viewLeg} />}
+                        </DialogTitle>
                     </DialogHeader>
                     {viewLeg && (
                         <div className="space-y-4 pt-2">

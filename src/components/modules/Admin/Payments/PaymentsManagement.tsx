@@ -33,6 +33,11 @@ const columns: ColumnDef<Payment>[] = [
         cell: ({ row }) => <StatusBadgeCell status={row.original.status} />,
     },
     { accessorKey: "transactionId", header: "Transaction ID", cell: ({ row }) => row.original.transactionId ?? "—" },
+    { 
+        accessorKey: "createdAt", 
+        header: "Date", 
+        cell: ({ row }) => new Date(row.original.createdAt).toLocaleDateString()
+    },
 ];
 
 export default function PaymentsManagement() {
@@ -54,13 +59,13 @@ export default function PaymentsManagement() {
     };
 
     const { data, isLoading } = useQuery({
-        queryKey: ["payments", queryParams],
+        queryKey: ["payments", "list", queryParams],
         queryFn: () => getAllPayments(queryParams),
     });
 
     const { mutate: markPaid } = useMutation({
         mutationFn: (shipmentId: string) => markPaymentAsPaid(shipmentId),
-        onSuccess: () => { toast.success("Payment marked as paid"); queryClient.invalidateQueries({ queryKey: ["payments"] }); },
+        onSuccess: () => { toast.success("Payment marked as paid"); queryClient.invalidateQueries({ queryKey: ["payments", "list"] }); },
         onError: (e: Error) => toast.error(e.message),
     });
 

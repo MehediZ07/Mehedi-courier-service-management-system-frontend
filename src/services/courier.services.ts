@@ -37,3 +37,23 @@ export async function toggleAvailability() {
 export async function deleteCourier(id: string) {
     return clientHttpClient.delete<Courier>(`/couriers/${id}`);
 }
+
+export async function getMyCourierEarnings() {
+    return clientHttpClient.get<ApiResponse<{
+        totalEarnings: number;
+        pendingCOD: number;
+        recentLegs: Array<{
+            id: string;
+            trackingNumber: string;
+            legType: string;
+            earning: number;
+            codCollected: boolean;
+            codAmount: number | null;
+            completedAt: string;
+        }>;
+    }>>("/couriers/my-earnings");
+}
+
+export async function settleCOD(courierId: string, amount: number) {
+    return clientHttpClient.patch<ApiResponse<Courier>>(`/couriers/${courierId}/settle-cod`, { amount });
+}

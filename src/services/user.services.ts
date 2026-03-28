@@ -27,30 +27,25 @@ export async function deleteUser(id: string) {
 }
 
 export async function uploadProfileImage(userId: string, file: File) {
-    const formData = new FormData();
-    formData.append('file', file);
-    
-    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/${userId}/upload-profile-image`;
-    const token = getAccessToken();
-    
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
+    // Convert file to base64
+    const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const result = reader.result as string;
+            // Remove data:image/xxx;base64, prefix
+            const base64String = result.split(',')[1];
+            resolve(base64String);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
     });
     
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Upload failed');
-    }
-    
-    return await response.json();
-}
-
-function getAccessToken() {
-    const cookies = document.cookie.split('; ');
-    const accessTokenCookie = cookies.find(row => row.startsWith('accessToken='));
-    return accessTokenCookie?.split('=')[1] || '';
+    return clientHttpClient.post<User>(
+        `/users/${userId}/upload-profile-image`,
+        {
+            image: base64,
+            filename: file.name,
+            mimetype: file.type,
+        }
+    );
 }
