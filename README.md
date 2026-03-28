@@ -106,10 +106,10 @@ src/
 
 | Role | Dashboard Route | Key Pages |
 |---|---|---|
-| `SUPER_ADMIN` / `ADMIN` | `/admin/dashboard` | Couriers, Merchants, Users, Shipments, Payments, Pricing, Notifications |
-| `COURIER` | `/courier/dashboard` | Available Shipments, My Deliveries, Earnings, Notifications |
-| `MERCHANT` | `/merchant/dashboard` | My Shipments, Create Shipment, Notifications |
-| `USER` | `/dashboard` | My Shipments, Create Shipment, Track, Notifications |
+| `SUPER_ADMIN` / `ADMIN` | `/admin/dashboard` | Couriers, Merchants, Users, Shipments, Payments, Pricing, Hubs, Legs, COD Settlement, Merchant Settlement, Notifications |
+| `COURIER` | `/courier/dashboard` | Available Legs, My Active Legs, Earnings, COD Settlement, Delivery History, Track Shipment, Notifications |
+| `MERCHANT` | `/merchant/dashboard` | My Shipments, Create Shipment, Settlement History, Track Shipment, Notifications |
+| `USER` | `/dashboard` | My Shipments, Create Shipment, Track Shipment, Notifications |
 
 Route access is enforced by the middleware in `src/proxy.ts`. Unauthenticated users are redirected to `/login`. Authenticated users accessing the wrong role's route are redirected to their own dashboard.
 
@@ -124,6 +124,13 @@ Route access is enforced by the middleware in `src/proxy.ts`. Unauthenticated us
 - Middleware-level route protection per role
 - Client-side navigation after login for proper cookie handling
 
+**Profile Management**
+- Profile image upload with base64 encoding (Vercel-compatible)
+- Image preview before upload
+- Profile images displayed in navbar, sidebar, and user dropdown
+- Cloudinary integration for image storage
+- Automatic fallback to user initials when no image
+
 **Notifications**
 - Real-time notification dropdown with unread count badge
 - Mark as read functionality with checkmark button
@@ -131,13 +138,33 @@ Route access is enforced by the middleware in `src/proxy.ts`. Unauthenticated us
 - Role-based notification pages for all user types
 - Admin can view all system notifications with user info
 
+**Shipment Management**
+- Phone number fields for pickup and delivery contacts
+- Shipment tracking with detailed status timeline
+- Print shipping labels and leg stickers
+- Bulk carton label printing
+- Shipment cancellation support
+
 **Shipment Creation**
 - No manual amount input — price is fetched live from `/pricing/calculate` as you fill in city and weight
 - Full price breakdown shown before submit (base, weight charge, express surcharge, total)
+- Phone number validation for pickup and delivery
 
-**Admin Pricing Management**
-- View all configured region tiers (LOCAL / NATIONAL / INTERNATIONAL)
-- Upsert rates directly from the dashboard
+**Courier Features**
+- Available legs management with city-based filtering
+- Active legs tracking with pickup and delivery actions
+- Earnings dashboard with total and pending COD
+- COD settlement history
+- Delivery history with completed shipments
+- City selection for courier profile
+
+**Admin Features**
+- Hub management and hub transfers
+- Legs management with assign/unassign functionality
+- COD settlement for couriers
+- Merchant settlement management
+- Pricing configuration (LOCAL / NATIONAL / INTERNATIONAL)
+- User, courier, and merchant management
 
 **Data Tables**
 - Server-managed search, filter, sort, and pagination via URL query params
