@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User as UserIcon } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useGetMe } from "@/hooks/queries";
 import { getDefaultDashboardRoute } from "@/lib/authUtils";
 import type { User } from "@/types/user.types";
@@ -49,7 +49,23 @@ export default function Navbar() {
           ) : user ? (
             <>
               <div className="flex items-center gap-2 text-sm">
-                <UserIcon className="size-4" />
+                {user.profileImage ? (
+                  <div className="h-8 w-8 rounded-full overflow-hidden border border-primary/20">
+                    <Image
+                      src={user.profileImage}
+                      alt={user.name}
+                      width={32}
+                      height={32}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                ) : (
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                    <span className="text-xs font-semibold text-primary">
+                      {user.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
                 <span className="font-medium">{user.name}</span>
               </div>
               <Button size="sm" asChild>
@@ -97,7 +113,23 @@ export default function Navbar() {
             ) : user ? (
               <>
                 <div className="flex items-center gap-2 text-sm py-2">
-                  <UserIcon className="size-4" />
+                  {user.profileImage ? (
+                    <div className="h-8 w-8 rounded-full overflow-hidden border border-primary/20">
+                      <Image
+                        src={user.profileImage}
+                        alt={user.name}
+                        width={32}
+                        height={32}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                      <span className="text-xs font-semibold text-primary">
+                        {user.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
                   <span className="font-medium">{user.name}</span>
                 </div>
                 <Button size="sm" asChild>

@@ -8,6 +8,7 @@ import { Key, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface UserDropdownProps{
     userInfo : UserInfo
@@ -31,9 +32,19 @@ const UserDropdown = ({ userInfo }: UserDropdownProps) => {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant={"outline"} size={"icon"} className="rounded-full">
-                    <span className="text-sm font-semibold">
-                        {userInfo.name.charAt(0).toUpperCase()}
-                    </span>
+                    {userInfo.profileImage ? (
+                        <Image
+                            src={userInfo.profileImage}
+                            alt={userInfo.name}
+                            width={32}
+                            height={32}
+                            className="rounded-full object-cover w-full h-full"
+                        />
+                    ) : (
+                        <span className="text-sm font-semibold">
+                            {userInfo.name.charAt(0).toUpperCase()}
+                        </span>
+                    )}
                 </Button>
             </DropdownMenuTrigger>
 
