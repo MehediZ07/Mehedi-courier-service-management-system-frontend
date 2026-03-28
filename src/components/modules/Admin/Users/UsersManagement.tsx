@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useMemo } from "react";
+import { useGetMe } from "@/hooks/queries";
 
 const STATUS_OPTIONS: UserStatus[] = ["ACTIVE", "INACTIVE", "SUSPENDED"];
 const ROLE_OPTIONS: UserRole[] = ["ADMIN", "COURIER", "MERCHANT", "USER"];
@@ -48,6 +49,8 @@ export default function UsersManagement() {
     const searchParams = useSearchParams();
     const queryClient = useQueryClient();
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const { data: currentUserData } = useGetMe();
+    const currentUser = currentUserData?.data;
 
     const { optimisticSortingState, optimisticPaginationState, isRouteRefreshPending, updateParams, handleSortingChange, handlePaginationChange } =
         useServerManagedDataTable({ searchParams });
@@ -86,6 +89,14 @@ export default function UsersManagement() {
         onSuccess: () => { toast.success("Role updated"); queryClient.invalidateQueries({ queryKey: ["users", "list"] }); setSelectedUser(null); },
         onError: (e: Error) => toast.error(e.message),
     });
+
+    const handleRoleChange = (id: string, role: UserRole) => {
+        if (currentUser?.role !== "SUPER_ADMIN") {
+            toast.warning("Only Super Admin can change user roles");
+            return;
+        }
+        changeRole({ id, role });
+    };
 
     const { mutate: removeUser } = useMutation({
         mutationFn: (id: string) => deleteUser(id),
@@ -148,14 +159,17 @@ export default function UsersManagement() {
                                 <p className="text-sm font-medium">Role</p>
                                 <Select
                                     value={selectedUser.role}
-                                    disabled={isRolePending}
-                                    onValueChange={(v) => changeRole({ id: selectedUser.id, role: v as UserRole })}
+                                    disabled={isRolePending || currentUser?.role !== "SUPER_ADMIN"}
+                                    onValueChange={(v) => handleRoleChange(selectedUser.id, v as UserRole)}
                                 >
                                     <SelectTrigger><SelectValue /></SelectTrigger>
                                     <SelectContent>
                                         {ROLE_OPTIONS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
+                                {currentUser?.role !== "SUPER_ADMIN" && (
+                                    <p className="text-xs text-muted-foreground">Only Super Admin can change roles</p>
+                                )}
                             </div>
                         </div>
                     )}
