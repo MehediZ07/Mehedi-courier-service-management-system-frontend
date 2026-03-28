@@ -7,6 +7,25 @@ Frontend for SwiftShip, a full-featured courier and delivery management platform
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38BDF8)](https://tailwindcss.com/)
 
+## Live Demo
+
+- Frontend App: https://swiftship-frontendv1.vercel.app
+- Backend API: https://swiftship-backend.vercel.app
+
+## Test Credentials
+
+```
+Admin:       admin@courier.com / Password@123
+Super Admin: superadmin@courier.com / Password@123
+Courier:     rahim.courier@example.com / Password@123 (Dhaka, BIKE)
+Courier:     karim.courier@example.com / Password@123 (Chittagong, BICYCLE)
+Courier:     jamal.courier@example.com / Password@123 (Sylhet, CAR)
+Merchant:    fatima@shopbd.com / Password@123
+Merchant:    hasan@ecommerce.com / Password@123
+User:        ayesha@example.com / Password@123
+User:        tanvir@example.com / Password@123
+```
+
 ---
 
 ## Tech Stack
