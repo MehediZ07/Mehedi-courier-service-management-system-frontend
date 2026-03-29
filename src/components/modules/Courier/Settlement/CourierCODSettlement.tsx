@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { clientHttpClient } from "@/lib/axios/clientHttpClient";
 import type { ApiResponse } from "@/types/api.types";
-import { Search, Calendar, Wallet, TrendingUp, Clock, AlertCircle } from "lucide-react";
+import { Search, Calendar, Wallet, TrendingUp, Clock, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface CODTransaction {
     id: string;
@@ -19,6 +20,8 @@ interface CODTransaction {
 interface CourierCODSettlement {
     pendingCOD: number;
     totalSettled: number;
+    totalEarnings: number;
+    companyEarnings: number;
     transactions: CODTransaction[];
 }
 
@@ -26,6 +29,8 @@ export default function CourierCODSettlement() {
     const [searchTerm, setSearchTerm] = useState("");
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const { data, isLoading } = useQuery({
         queryKey: ["courier-cod-settlement"],
@@ -35,7 +40,7 @@ export default function CourierCODSettlement() {
         },
     });
 
-    const settlement = data || { pendingCOD: 0, totalSettled: 0, transactions: [] };
+    const settlement = data || { pendingCOD: 0, totalSettled: 0, totalEarnings: 0, companyEarnings: 0, transactions: [] };
 
     const filteredTransactions = useMemo(() => {
         let filtered = settlement.transactions;
@@ -59,6 +64,12 @@ export default function CourierCODSettlement() {
 
         return filtered.sort((a, b) => new Date(b.settledAt).getTime() - new Date(a.settledAt).getTime());
     }, [settlement.transactions, searchTerm, dateFrom, dateTo]);
+
+    const currentPageClamped = Math.min(currentPage, Math.max(1, Math.ceil(filteredTransactions.length / itemsPerPage)));
+    const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+    const startIndex = (currentPageClamped - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex);
 
     if (isLoading) return <div>Loading...</div>;
 
@@ -101,7 +112,7 @@ export default function CourierCODSettlement() {
                             {settlement.totalSettled.toFixed(2)} BDT
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                            All-time settlements
+                            All COD collected
                         </p>
                     </CardContent>
                 </Card>
@@ -109,15 +120,15 @@ export default function CourierCODSettlement() {
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                             <Wallet className="h-4 w-4" />
-                            Transactions
+                            Your Earnings
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">
-                            {settlement.transactions.length}
+                        <div className="text-2xl font-bold text-blue-600">
+                            {settlement.totalEarnings.toFixed(2)} BDT
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                            Settlement records
+                            From deliveries
                         </p>
                     </CardContent>
                 </Card>
@@ -203,7 +214,7 @@ export default function CourierCODSettlement() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredTransactions.map((transaction) => (
+                                    {paginatedTransactions.map((transaction) => (
                                         <tr key={transaction.id} className="border-b hover:bg-muted/30">
                                             <td className="p-3">
                                                 <p className="font-mono text-sm">{transaction.id.slice(0, 8)}</p>
@@ -229,6 +240,35 @@ export default function CourierCODSettlement() {
                                 </tbody>
                             </table>
                         </div>
+
+                        {totalPages > 1 && (
+                            <div className="flex items-center justify-between p-4 border-t">
+                                <p className="text-sm text-muted-foreground">
+                                    Showing {startIndex + 1}-{Math.min(endIndex, filteredTransactions.length)} of {filteredTransactions.length}
+                                </p>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPageClamped === 1}
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </Button>
+                                    <span className="text-sm">
+                                        Page {currentPageClamped} of {totalPages}
+                                    </span>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPageClamped === totalPages}
+                                    >
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             )}
@@ -237,14 +277,11 @@ export default function CourierCODSettlement() {
             <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
                 <CardContent className="pt-6">
                     <div className="space-y-2 text-sm">
-                        <p className="font-semibold text-blue-900 dark:text-blue-100">How COD Settlement Works:</p>
+                        <p className="font-semibold text-blue-900 dark:text-blue-100">Settlement Breakdown:</p>
                         <ul className="space-y-1 text-blue-800 dark:text-blue-200 list-disc list-inside">
-                            <li>When you deliver COD shipments, you collect cash from customers</li>
-                            <li>This includes both product price and shipment charges</li>
-                            <li>After delivery confirmation, the collected amount appears in &quot;Pending COD&quot;</li>
-                            <li>Admin verifies and processes settlements periodically</li>
-                            <li>Once settled, you receive the payment and it appears in your history</li>
-                            <li>Your earnings from deliveries are separate and tracked in the Earnings page</li>
+                            <li>Total COD Collected: {settlement.totalSettled.toFixed(2)} BDT</li>
+                            <li>Your Delivery Earnings: {settlement.totalEarnings.toFixed(2)} BDT</li>
+                            <li>Pending COD (Not Yet Settled): {settlement.pendingCOD.toFixed(2)} BDT</li>
                         </ul>
                     </div>
                 </CardContent>

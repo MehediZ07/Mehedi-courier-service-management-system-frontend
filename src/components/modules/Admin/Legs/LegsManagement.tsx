@@ -35,7 +35,8 @@ const columns: ColumnDef<ShipmentLeg>[] = [
     {
         accessorKey: "shipment.trackingNumber",
         header: "Tracking #",
-        cell: ({ row }) => row.original.shipment?.trackingNumber ?? "—"
+        cell: ({ row }) => row.original.shipment?.trackingNumber ?? "—",
+        enableSorting: false,
     },
     {
         accessorKey: "legNumber",
@@ -59,6 +60,7 @@ const columns: ColumnDef<ShipmentLeg>[] = [
             if (leg.originType === "HUB") return leg.originHub?.name ?? "Hub";
             return leg.originAddress ?? "—";
         },
+        enableSorting: false,
     },
     {
         accessorKey: "destination",
@@ -68,6 +70,7 @@ const columns: ColumnDef<ShipmentLeg>[] = [
             if (leg.destType === "HUB") return leg.destHub?.name ?? "Hub";
             return leg.destAddress ?? "—";
         },
+        enableSorting: false,
     },
     {
         accessorKey: "status",
@@ -78,6 +81,7 @@ const columns: ColumnDef<ShipmentLeg>[] = [
         accessorKey: "courier.user.name",
         header: "Courier",
         cell: ({ row }) => row.original.courier?.user?.name ?? "Unassigned",
+        enableSorting: false,
     },
 ];
 

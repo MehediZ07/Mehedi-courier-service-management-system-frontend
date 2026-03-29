@@ -5,8 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Wallet, TrendingUp, Clock, PackageCheck, AlertCircle, ArrowRight } from "lucide-react";
+import { Wallet, TrendingUp, Clock, PackageCheck, AlertCircle, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 type EarningLeg = {
     id: string;
@@ -19,6 +20,9 @@ type EarningLeg = {
 };
 
 export default function CourierEarnings() {
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     const { data, isLoading } = useQuery({
         queryKey: ["courier-earnings"],
         queryFn: getMyCourierEarnings,
@@ -26,6 +30,12 @@ export default function CourierEarnings() {
 
     const earnings = data?.data;
     const recentLegs: EarningLeg[] = earnings?.recentLegs || [];
+
+    // Pagination logic
+    const totalPages = Math.ceil(recentLegs.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedLegs = recentLegs.slice(startIndex, endIndex);
 
     const stats = {
         totalEarnings: earnings?.totalEarnings || 0,
@@ -159,14 +169,7 @@ export default function CourierEarnings() {
             {/* Recent Completed Legs */}
             <Card>
                 <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                        <span>Recent Completed Deliveries</span>
-                        <Link href="/courier/dashboard/delivery-history">
-                            <Button variant="ghost" size="sm">
-                                View All <ArrowRight className="h-4 w-4 ml-2" />
-                            </Button>
-                        </Link>
-                    </CardTitle>
+                    <CardTitle>Recent Completed Deliveries ({recentLegs.length})</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {recentLegs.length === 0 ? (
@@ -175,30 +178,62 @@ export default function CourierEarnings() {
                             <p>No completed deliveries yet</p>
                         </div>
                     ) : (
-                        <div className="space-y-3">
-                            {recentLegs.map((leg) => (
-                                <div key={leg.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <p className="font-mono font-semibold">{leg.trackingNumber}</p>
-                                            <Badge variant="outline">{leg.legType}</Badge>
-                                            {leg.codCollected && (
-                                                <Badge className="bg-yellow-600">COD</Badge>
+                        <>
+                            <div className="space-y-3">
+                                {paginatedLegs.map((leg) => (
+                                    <div key={leg.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-mono font-semibold">{leg.trackingNumber}</p>
+                                                <Badge variant="outline">{leg.legType}</Badge>
+                                                {leg.codCollected && (
+                                                    <Badge className="bg-yellow-600">COD</Badge>
+                                                )}
+                                            </div>
+                                            <p className="text-xs text-muted-foreground mt-1">
+                                                Completed: {new Date(leg.completedAt).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-semibold text-green-600">{leg.earning.toFixed(2)} BDT</p>
+                                            {leg.codCollected && leg.codAmount && (
+                                                <p className="text-xs text-yellow-600">COD: {leg.codAmount.toFixed(2)} BDT</p>
                                             )}
                                         </div>
-                                        <p className="text-xs text-muted-foreground mt-1">
-                                            Completed: {new Date(leg.completedAt).toLocaleDateString()}
-                                        </p>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="font-semibold text-green-600">{leg.earning.toFixed(2)} BDT</p>
-                                        {leg.codCollected && leg.codAmount && (
-                                            <p className="text-xs text-yellow-600">COD: {leg.codAmount.toFixed(2)} BDT</p>
-                                        )}
+                                ))}
+                            </div>
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                                    <p className="text-sm text-muted-foreground">
+                                        Showing {startIndex + 1}-{Math.min(endIndex, recentLegs.length)} of {recentLegs.length}
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                        </Button>
+                                        <span className="text-sm">
+                                            Page {currentPage} of {totalPages}
+                                        </span>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Button>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
+                            )}
+                        </>
                     )}
                 </CardContent>
             </Card>

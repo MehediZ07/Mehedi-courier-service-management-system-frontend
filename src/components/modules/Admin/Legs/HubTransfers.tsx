@@ -366,13 +366,13 @@ export default function HubTransfers() {
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
-                        <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="flex flex-wrap gap-2">
                           <Button
                             onClick={() => openDialog(group, "release")}
-                            className="flex-1"
+                            className="flex-1 min-w-[100px]"
                             size="sm"
                           >
-                            <Truck className="h-4 w-4 mr-2" />
+                            <Truck className="h-4 w-4 mr-1" />
                             Release
                           </Button>
                           <BulkCartonLabel
@@ -467,14 +467,14 @@ export default function HubTransfers() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         onClick={() => openDialog(group, "confirm")}
-                        className="flex-1"
+                        className="flex-1 min-w-[100px]"
                         size="sm"
                         variant="outline"
                       >
-                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        <CheckCircle2 className="h-4 w-4 mr-1" />
                         Confirm
                       </Button>
                       <BulkCartonLabel
@@ -501,7 +501,7 @@ export default function HubTransfers() {
 
         {/* Action Dialog */}
         <Dialog open={!!selectedGroup} onOpenChange={(o) => !o && setSelectedGroup(null)}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
             <DialogHeader>
               <DialogTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <span>{action === "release" ? "Release" : "Confirm"} Hub Transfer</span>
@@ -585,7 +585,7 @@ export default function HubTransfers() {
 
         {/* View Details Dialog */}
         <Dialog open={!!viewGroup} onOpenChange={(o) => !o && setViewGroup(null)}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-xl md:max-w-2xl lg:max-w-4xl xl:max-w-5xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                 <span>Transfer Details</span>

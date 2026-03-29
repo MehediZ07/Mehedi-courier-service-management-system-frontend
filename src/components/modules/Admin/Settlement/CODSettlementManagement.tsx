@@ -50,8 +50,9 @@ export default function CODSettlementManagement() {
         },
     });
 
-    const couriers = data?.data ?? [];
-    const couriersWithCOD = couriers.filter((c) => c.pendingCOD > 0);
+    const couriers = useMemo(() => data?.data ?? [], [data]);
+    const couriersWithCOD = useMemo(() => couriers.filter((c) => c.pendingCOD > 0), [couriers]);
+    const totalCourierEarnings = useMemo(() => couriers.reduce((sum, c) => sum + (c.totalEarnings || 0), 0), [couriers]);
 
     const filteredCouriers = useMemo(() => {
         let filtered = couriersWithCOD.filter(c =>
@@ -67,11 +68,11 @@ export default function CODSettlementManagement() {
         return filtered;
     }, [couriersWithCOD, searchTerm, selectedHub]);
 
-    const totalPendingCOD = couriersWithCOD.reduce((sum, c) => sum + c.pendingCOD, 0);
-    const selectedTotal = Array.from(selectedCouriers).reduce((sum, id) => {
+    const totalPendingCOD = useMemo(() => couriersWithCOD.reduce((sum, c) => sum + c.pendingCOD, 0), [couriersWithCOD]);
+    const selectedTotal = useMemo(() => Array.from(selectedCouriers).reduce((sum, id) => {
         const courier = couriersWithCOD.find(c => c.id === id);
         return sum + (courier?.pendingCOD || 0);
-    }, 0);
+    }, 0), [selectedCouriers, couriersWithCOD]);
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
@@ -130,7 +131,7 @@ export default function CODSettlementManagement() {
     return (
         <div className="space-y-6">
             {/* Summary Cards */}
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-4">
                 <Card>
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
@@ -152,6 +153,21 @@ export default function CODSettlementManagement() {
                         <div className="text-2xl font-bold text-yellow-600">
                             {totalPendingCOD.toFixed(2)} BDT
                         </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                            Total Courier Earnings
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold text-blue-600">
+                            {totalCourierEarnings.toFixed(2)} BDT
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            All-time delivery earnings
+                        </p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -257,6 +273,7 @@ export default function CODSettlementManagement() {
                                         <th className="p-3 text-left text-sm font-medium">Contact</th>
                                         <th className="p-3 text-left text-sm font-medium">City</th>
                                         <th className="p-3 text-left text-sm font-medium">Vehicle</th>
+                                        <th className="p-3 text-right text-sm font-medium">Earnings</th>
                                         <th className="p-3 text-right text-sm font-medium">Pending COD</th>
                                         <th className="p-3 text-right text-sm font-medium">Action</th>
                                     </tr>
@@ -283,6 +300,11 @@ export default function CODSettlementManagement() {
                                             </td>
                                             <td className="p-3">
                                                 <Badge variant="secondary">{courier.vehicleType}</Badge>
+                                            </td>
+                                            <td className="p-3 text-right">
+                                                <Badge variant="outline" className="font-mono text-blue-600 border-blue-600">
+                                                    {courier.totalEarnings.toFixed(2)} BDT
+                                                </Badge>
                                             </td>
                                             <td className="p-3 text-right">
                                                 <Badge variant="default" className="font-mono bg-yellow-600">

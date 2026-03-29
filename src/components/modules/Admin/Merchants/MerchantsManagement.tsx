@@ -16,8 +16,8 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 const columns: ColumnDef<Merchant>[] = [
-    { accessorKey: "user.name", header: "Owner", cell: ({ row }) => row.original.user?.name ?? "—" },
-    { accessorKey: "user.email", header: "Email", cell: ({ row }) => row.original.user?.email ?? "—" },
+    { accessorKey: "user.name", header: "Owner", cell: ({ row }) => row.original.user?.name ?? "—", enableSorting: false },
+    { accessorKey: "user.email", header: "Email", cell: ({ row }) => row.original.user?.email ?? "—", enableSorting: false },
     { accessorKey: "companyName", header: "Company" },
     { accessorKey: "address", header: "Address" },
 ];

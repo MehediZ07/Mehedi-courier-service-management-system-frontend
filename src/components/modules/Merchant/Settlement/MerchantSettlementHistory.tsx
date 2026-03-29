@@ -5,9 +5,10 @@ import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { clientHttpClient } from "@/lib/axios/clientHttpClient";
 import type { ApiResponse } from "@/types/api.types";
-import { Search, Calendar, DollarSign, TrendingUp, Clock } from "lucide-react";
+import { Search, Calendar, DollarSign, TrendingUp, Clock, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface SettlementTransaction {
     id: string;
@@ -26,6 +27,8 @@ export default function MerchantSettlementHistory() {
     const [searchTerm, setSearchTerm] = useState("");
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const { data, isLoading } = useQuery({
         queryKey: ["merchant-settlement-history"],
@@ -59,6 +62,12 @@ export default function MerchantSettlementHistory() {
 
         return filtered.sort((a, b) => new Date(b.settledAt).getTime() - new Date(a.settledAt).getTime());
     }, [settlement.transactions, searchTerm, dateFrom, dateTo]);
+
+    const currentPageClamped = Math.min(currentPage, Math.max(1, Math.ceil(filteredTransactions.length / itemsPerPage)));
+    const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+    const startIndex = (currentPageClamped - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedTransactions = filteredTransactions.slice(startIndex, endIndex);
 
     if (isLoading) return <div>Loading...</div>;
 
@@ -184,7 +193,7 @@ export default function MerchantSettlementHistory() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredTransactions.map((transaction) => (
+                                    {paginatedTransactions.map((transaction) => (
                                         <tr key={transaction.id} className="border-b hover:bg-muted/30">
                                             <td className="p-3">
                                                 <p className="font-mono text-sm">{transaction.id.slice(0, 8)}</p>
@@ -210,6 +219,35 @@ export default function MerchantSettlementHistory() {
                                 </tbody>
                             </table>
                         </div>
+
+                        {totalPages > 1 && (
+                            <div className="flex items-center justify-between p-4 border-t">
+                                <p className="text-sm text-muted-foreground">
+                                    Showing {startIndex + 1}-{Math.min(endIndex, filteredTransactions.length)} of {filteredTransactions.length}
+                                </p>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPageClamped === 1}
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </Button>
+                                    <span className="text-sm">
+                                        Page {currentPageClamped} of {totalPages}
+                                    </span>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPageClamped === totalPages}
+                                    >
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             )}

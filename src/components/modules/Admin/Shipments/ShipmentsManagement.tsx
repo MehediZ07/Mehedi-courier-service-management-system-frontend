@@ -30,7 +30,7 @@ const FILTER_DEFINITIONS = [
 
 const columns: ColumnDef<Shipment>[] = [
     { accessorKey: "trackingNumber", header: "Tracking #" },
-    { accessorKey: "sender.name", header: "Sender", cell: ({ row }) => row.original.sender?.name ?? "—" },
+    { accessorKey: "sender.name", header: "Sender", cell: ({ row }) => row.original.sender?.name ?? "—", enableSorting: false },
     { accessorKey: "pickupCity", header: "From" },
     { accessorKey: "deliveryCity", header: "To" },
     { accessorKey: "weight", header: "Weight (kg)" },
@@ -52,6 +52,7 @@ const columns: ColumnDef<Shipment>[] = [
         accessorKey: "pricing.totalPrice",
         header: "Amount",
         cell: ({ row }) => row.original.pricing ? `${row.original.pricing.totalPrice} BDT` : "—",
+        enableSorting: false,
     },
 ];
 

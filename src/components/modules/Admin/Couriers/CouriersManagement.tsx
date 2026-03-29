@@ -28,8 +28,8 @@ const FILTER_DEFINITIONS = [
 ];
 
 const columns: ColumnDef<Courier>[] = [
-    { accessorKey: "user.name", header: "Name", cell: ({ row }) => row.original.user?.name ?? "—" },
-    { accessorKey: "user.email", header: "Email", cell: ({ row }) => row.original.user?.email ?? "—" },
+    { accessorKey: "user.name", header: "Name", cell: ({ row }) => row.original.user?.name ?? "—", enableSorting: false },
+    { accessorKey: "user.email", header: "Email", cell: ({ row }) => row.original.user?.email ?? "—", enableSorting: false },
     { accessorKey: "city", header: "City" },
     {
         accessorKey: "vehicleType",

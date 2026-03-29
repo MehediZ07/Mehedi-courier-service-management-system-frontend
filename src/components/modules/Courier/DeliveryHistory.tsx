@@ -22,6 +22,7 @@ const columns: ColumnDef<ShipmentLeg>[] = [
         accessorKey: "shipment.trackingNumber",
         header: "Tracking #",
         cell: ({ row }) => row.original.shipment?.trackingNumber ?? "—",
+        enableSorting: false,
     },
     {
         accessorKey: "legType",
@@ -37,6 +38,7 @@ const columns: ColumnDef<ShipmentLeg>[] = [
         accessorKey: "shipment.pricing.totalPrice",
         header: "Amount",
         cell: ({ row }) => row.original.shipment?.pricing ? `${row.original.shipment.pricing.totalPrice} BDT` : "—",
+        enableSorting: false,
     },
     {
         accessorKey: "status",

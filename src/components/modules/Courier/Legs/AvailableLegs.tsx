@@ -21,6 +21,7 @@ const columns: ColumnDef<ShipmentLeg>[] = [
     accessorKey: "shipment.trackingNumber",
     header: "Tracking #",
     cell: ({ row }) => row.original.shipment?.trackingNumber ?? "—",
+    enableSorting: false,
   },
   {
     accessorKey: "legNumber",
@@ -41,6 +42,7 @@ const columns: ColumnDef<ShipmentLeg>[] = [
       if (row.original.originType === "HUB") return row.original.originHub?.name ?? "Hub";
       return row.original.originAddress ?? "—";
     },
+    enableSorting: false,
   },
   {
     accessorKey: "destAddress",
@@ -49,6 +51,7 @@ const columns: ColumnDef<ShipmentLeg>[] = [
       if (row.original.destType === "HUB") return row.original.destHub?.name ?? "Hub";
       return row.original.destAddress ?? "—";
     },
+    enableSorting: false,
   },
   {
     accessorKey: "shipment.pricing.totalPrice",
@@ -57,6 +60,7 @@ const columns: ColumnDef<ShipmentLeg>[] = [
       row.original.shipment?.pricing
         ? `${row.original.shipment.pricing.totalPrice} BDT`
         : "—",
+    enableSorting: false,
   },
   {
     accessorKey: "status",

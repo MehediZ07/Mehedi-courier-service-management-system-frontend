@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useGetAllShipments, useGetAllCouriers, useGetAllMerchants, useGetAllUsers } from "@/hooks/queries";
 import { useMemo } from "react";
-import { Package, Clock, PackageCheck, Bike, Users, Store, TrendingUp, AlertCircle } from "lucide-react";
+import { Package, Clock, PackageCheck, Bike, Users, Store, TrendingUp, AlertCircle, DollarSign, Wallet } from "lucide-react";
 import Link from "next/link";
 import ShipmentBarChart from "@/components/shared/ShipmentBarChart";
 import ShipmentPieChart from "@/components/shared/ShipmentPieChart";
@@ -21,6 +21,10 @@ const AdminDashboardContent = () => {
         const merchants = merchantsResponse?.data || [];
         const users = usersResponse?.data || [];
 
+        const totalPendingCOD = couriers.reduce((sum, c) => sum + (c.pendingCOD || 0), 0);
+        const totalPendingMerchantSettlement = merchants.reduce((sum, m) => sum + (m.pendingSettlement || 0), 0);
+        const totalCourierEarnings = couriers.reduce((sum, c) => sum + (c.totalEarnings || 0), 0);
+
         return {
             totalShipments: shipments.length,
             pending: shipments.filter(s => s.status === "PENDING" || s.status === "ASSIGNED").length,
@@ -31,6 +35,9 @@ const AdminDashboardContent = () => {
             pendingCouriers: couriers.filter(c => c.approvalStatus === "PENDING").length,
             totalMerchants: merchants.length,
             totalUsers: users.length,
+            totalPendingCOD,
+            totalPendingMerchantSettlement,
+            totalCourierEarnings,
         };
     }, [shipmentsResponse, couriersResponse, merchantsResponse, usersResponse]);
 
@@ -151,7 +158,7 @@ const AdminDashboardContent = () => {
             </div>
 
             {/* Secondary Stats */}
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
                 <Card className="bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950 dark:to-violet-950 border-purple-200 dark:border-purple-800">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-purple-900 dark:text-purple-100">
@@ -204,6 +211,44 @@ const AdminDashboardContent = () => {
                         <p className="text-sm text-green-600 dark:text-green-400 mt-2">
                             {stats.delivered} of {stats.totalShipments} delivered
                         </p>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950 border-yellow-200 dark:border-yellow-800">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-yellow-900 dark:text-yellow-100">
+                            <DollarSign className="h-5 w-5" />
+                            Pending COD
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold text-yellow-700 dark:text-yellow-300">
+                            {stats.totalPendingCOD.toFixed(0)}
+                        </div>
+                        <Link href="/admin/dashboard/cod-settlement">
+                            <Button variant="outline" size="sm" className="mt-3 border-yellow-600 text-yellow-700 hover:bg-yellow-100">
+                                Settle COD
+                            </Button>
+                        </Link>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-br from-pink-50 to-rose-50 dark:from-pink-950 dark:to-rose-950 border-pink-200 dark:border-pink-800">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-pink-900 dark:text-pink-100">
+                            <Wallet className="h-5 w-5" />
+                            Merchant Pending
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-3xl font-bold text-pink-700 dark:text-pink-300">
+                            {stats.totalPendingMerchantSettlement.toFixed(0)}
+                        </div>
+                        <Link href="/admin/dashboard/merchant-settlement">
+                            <Button variant="outline" size="sm" className="mt-3 border-pink-600 text-pink-700 hover:bg-pink-100">
+                                Settle Merchants
+                            </Button>
+                        </Link>
                     </CardContent>
                 </Card>
             </div>
