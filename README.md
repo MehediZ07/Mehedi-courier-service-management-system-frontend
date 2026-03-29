@@ -11,19 +11,17 @@ Frontend for SwiftShip, a full-featured courier and delivery management platform
 
 - Frontend App: https://swiftship-frontendv1.vercel.app
 - Backend API: https://swiftship-backend.vercel.app
+- Live video overview: https://drive.google.com/file/d/1tifUZPwJU50tc23QoKL6e_zqzNV1w-aR/view?usp=sharing
 
 ## Test Credentials
 
 ```
-Admin:       admin@courier.com / Password@123
 Super Admin: superadmin@courier.com / Password@123
+Admin:       admin@courier.com / Password@123
 Courier:     rahim.courier@example.com / Password@123 (Dhaka, BIKE)
 Courier:     karim.courier@example.com / Password@123 (Chittagong, BICYCLE)
-Courier:     jamal.courier@example.com / Password@123 (Sylhet, CAR)
 Merchant:    fatima@shopbd.com / Password@123
-Merchant:    hasan@ecommerce.com / Password@123
 User:        ayesha@example.com / Password@123
-User:        tanvir@example.com / Password@123
 ```
 
 ---
