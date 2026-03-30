@@ -1,8 +1,7 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PaginationMeta } from "@/types/api.types";
 import { ColumnDef, flexRender, getCoreRowModel, getPaginationRowModel, getSortedRowModel, PaginationState, SortingState, useReactTable } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal } from "lucide-react";
@@ -154,15 +153,6 @@ const DataTable = <TData,>({ data = [] as TData[], columns, actions, toolbarActi
     });
     return (
       <div className="relative">
-        {showLoadingOverlay && (
-          <div className="absolute inset-0 bg-background/50 backdrop-blur-sm z-10 flex items-center justify-center">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-              <span className="text-sm text-muted-foreground">Loading...</span>
-            </div>
-          </div>
-        )}
-
         {(search || filters || toolbarAction) && (
           <div className="mb-4 flex flex-wrap items-start gap-3">
             {search && (
@@ -192,7 +182,6 @@ const DataTable = <TData,>({ data = [] as TData[], columns, actions, toolbarActi
           </div>
         )}
 
-        {/* // Table */}
         <div className="rounded-lg border">
           <Table>
             <TableHeader>
@@ -232,7 +221,17 @@ const DataTable = <TData,>({ data = [] as TData[], columns, actions, toolbarActi
               ))}
             </TableHeader>
             <TableBody>
-              {table.getRowModel()?.rows?.length ? (
+              {showLoadingOverlay ? (
+                Array.from({ length: pagination?.state.pageSize || 10 }).map((_, index) => (
+                  <TableRow key={index}>
+                    {tableColumns.map((_, cellIndex) => (
+                      <TableCell key={cellIndex}>
+                        <Skeleton className="h-4 w-full" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : table.getRowModel()?.rows?.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id}>
                     {row.getVisibleCells().map((cell) => (

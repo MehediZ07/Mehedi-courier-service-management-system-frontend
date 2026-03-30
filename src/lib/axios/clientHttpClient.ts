@@ -67,10 +67,15 @@ const httpGet = async <TData>(endpoint: string, options?: ApiRequestOptions): Pr
             params: options?.params,
             headers: options?.headers,
         });
-        // Return the full response data (which includes data, meta for paginated, or just data for single)
         return response.data;
-    } catch (error) {
-        console.error(`GET request to ${endpoint} failed:`, error);
+    } catch (error: unknown) {
+        const isAuthMeError = error && typeof error === 'object' && 'response' in error && 
+            (error as { response?: { status?: number } }).response?.status === 401 && 
+            endpoint.includes('/auth/me');
+        
+        if (!isAuthMeError) {
+            console.error(`GET request to ${endpoint} failed:`, error);
+        }
         throw error;
     }
 };

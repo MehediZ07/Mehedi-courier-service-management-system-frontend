@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useGetMe } from "@/hooks/queries";
 import { getDefaultDashboardRoute } from "@/lib/authUtils";
 import type { User } from "@/types/user.types";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 const navLinks = [
   { label: "Features", href: "#features" },
@@ -20,6 +21,24 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { data: userResponse, isLoading, isError } = useGetMe();
   const user = (!isError && userResponse?.data ? userResponse.data : null) as User | null;
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const trackVisit = async () => {
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/analytics/track-guest`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ page: pathname || "/" }),
+          credentials: "include",
+        });
+      } catch (error) {
+        console.error("Failed to track visit:", error);
+      }
+    };
+
+    trackVisit();
+  }, [pathname]);
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-white/80 backdrop-blur-md border-b border-border">

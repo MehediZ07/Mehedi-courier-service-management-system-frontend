@@ -1,4 +1,5 @@
+import PageLoader from "@/components/shared/PageLoader";
+
 export default function AdminsDashboardLoading() {
-  // Or a custom loading skeleton component
-  return <p>Loading Admins Dashboard...</p>;
+  return <PageLoader message="Loading dashboard" />;
 }

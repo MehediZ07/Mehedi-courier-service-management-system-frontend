@@ -25,8 +25,7 @@ export function useGetMe() {
       try {
         const response = await clientHttpClient.get<ApiResponse<User>>("/auth/me");
         return response;
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
+      } catch {
         return null;
       }
     },

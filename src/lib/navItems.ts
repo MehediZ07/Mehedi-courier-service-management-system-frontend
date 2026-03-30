@@ -3,7 +3,7 @@ import { getDefaultDashboardRoute, UserRole } from "./authUtils";
 
 export const getCommonNavItems = (role: UserRole): NavSection[] => {
     const defaultDashboard = getDefaultDashboardRoute(role);
-    return [
+    const baseItems: NavSection[] = [
         {
             items: [
                 { title: "Home", href: "/", icon: "Home" },
@@ -11,13 +11,20 @@ export const getCommonNavItems = (role: UserRole): NavSection[] => {
                 { title: "My Profile", href: "/my-profile", icon: "User" },
             ],
         },
-        {
-            title: "Settings",
-            items: [
-                { title: "Change Password", href: "/change-password", icon: "Settings" },
-            ],
-        },
     ];
+
+    if (role === "SUPER_ADMIN") {
+        baseItems[0].items.push({ title: "Analytics", href: "/admin/dashboard/analytics", icon: "BarChart" });
+    }
+
+    baseItems.push({
+        title: "Settings",
+        items: [
+            { title: "Change Password", href: "/change-password", icon: "Settings" },
+        ],
+    });
+
+    return baseItems;
 };
 
 export const adminNavItems: NavSection[] = [

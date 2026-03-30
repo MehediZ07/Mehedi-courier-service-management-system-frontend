@@ -1,4 +1,4 @@
+import PageLoader from "@/components/shared/PageLoader";
 export default function AdminsPaymentsManagementLoading() {
-  // Or a custom loading skeleton component
-  return <p>Loading Admins Payments Management...</p>;
+  return <PageLoader message="Loading admins payments management" />;
 }

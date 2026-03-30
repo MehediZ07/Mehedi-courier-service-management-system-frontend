@@ -254,7 +254,7 @@ const AdminDashboardContent = () => {
             </div>
 
             {/* Charts */}
-            <div className="grid gap-4 md:grid-cols-6">
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-6">
                 <ShipmentBarChart data={barData} title="Shipment Trends" description="Monthly shipment statistics" />
                 <ShipmentPieChart data={pieData} title="Shipment Status" description="Distribution by current status" />
             </div>

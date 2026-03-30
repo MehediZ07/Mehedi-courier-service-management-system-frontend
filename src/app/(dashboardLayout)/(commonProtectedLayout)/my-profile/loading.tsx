@@ -1,4 +1,5 @@
+import PageLoader from "@/components/shared/PageLoader";
 export default function MyProfileLoading() {
   // Or a custom loading skeleton component
-  return <p>Loading My Profile...</p>;
+  return <PageLoader message="Loading my profile..." />;
 }
