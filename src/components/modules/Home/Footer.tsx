@@ -4,41 +4,42 @@ import Image from "next/image";
 
 const footerLinks = {
   Product: [
-    { label: "Features", href: "#features" },
-    { label: "How It Works", href: "#how-it-works" },
-    { label: "Pricing", href: "#pricing" },
-    { label: "Changelog", href: "#" },
+    { label: "Features", href: "/#features" },
+    { label: "How It Works", href: "/#how-it-works" },
+    { label: "Services", href: "/services" },
+    { label: "Pricing", href: "/#pricing" },
+    { label: "Track a Package", href: "/login" },
   ],
   Company: [
-    { label: "About Us", href: "#" },
-    { label: "Blog", href: "#" },
-    { label: "Careers", href: "#" },
-    { label: "Contact", href: "#" },
+    { label: "About Us", href: "/about" },
+    { label: "Contact Us", href: "/contact" },
+    { label: "Register as Courier", href: "/register-courier" },
+    { label: "Sign Up", href: "/register" },
   ],
-  Developers: [
-    { label: "API Docs", href: "#" },
-    { label: "Webhooks", href: "#" },
-    { label: "Status", href: "#" },
-    { label: "GitHub", href: "#" },
+  Support: [
+    { label: "Login", href: "/login" },
+    { label: "Register", href: "/register" },
+    { label: "Become a Courier", href: "/register-courier" },
+    { label: "Forgot Password", href: "/forgot-password" },
   ],
   Legal: [
-    { label: "Privacy Policy", href: "#" },
-    { label: "Terms of Service", href: "#" },
-    { label: "Cookie Policy", href: "#" },
-    { label: "GDPR", href: "#" },
+    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Terms of Service", href: "/terms" },
+    { label: "About Us", href: "/about" },
+    { label: "Contact", href: "/contact" },
   ],
 };
 
 const socials = [
-  { icon: Twitter, href: "#", label: "Twitter" },
-  { icon: Github, href: "#", label: "GitHub" },
-  { icon: Linkedin, href: "#", label: "LinkedIn" },
-  { icon: Mail, href: "#", label: "Email" },
+  { icon: Twitter, href: "https://twitter.com", label: "Twitter" },
+  { icon: Github, href: "https://github.com", label: "GitHub" },
+  { icon: Linkedin, href: "https://linkedin.com", label: "LinkedIn" },
+  { icon: Mail, href: "mailto:support@swiftship.com", label: "Email" },
 ];
 
 export default function Footer() {
   return (
-    <footer className="bg-foreground text-background">
+    <footer className="bg-neutral-950 text-neutral-100 dark:bg-neutral-950 dark:text-neutral-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top */}
         <div className="py-14 grid grid-cols-2 md:grid-cols-6 gap-10">
@@ -63,6 +64,11 @@ export default function Footer() {
                   <s.icon className="size-4 text-white/70" />
                 </a>
               ))}
+            </div>
+            {/* Contact */}
+            <div className="flex flex-col gap-1 mt-2 text-sm text-white/50">
+              <a href="mailto:support@swiftship.com" className="hover:text-white transition-colors">support@swiftship.com</a>
+              <a href="tel:+8801700000000" className="hover:text-white transition-colors">+880 1700-000000</a>
             </div>
           </div>
 
@@ -92,7 +98,7 @@ export default function Footer() {
         <div className="border-t border-white/10 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-white/40">
           <p>© {new Date().getFullYear()} SwiftShip. All rights reserved.</p>
           <p>
-            Built with ❤️ for the courier industry · Powered by{" "}
+            Built with love for the courier industry · Powered by{" "}
             <span className="text-white/60">Next.js & Prisma</span>
           </p>
         </div>

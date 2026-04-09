@@ -11,6 +11,7 @@ import { Package, Truck, PackageCheck, Wallet, Clock, AlertCircle, ArrowRight, B
 import Link from "next/link";
 import type { ApiResponse } from "@/types/api.types";
 import type { ShipmentLeg } from "@/types/shipmentLeg.types";
+import { AIInsightsWidget } from "@/components/shared/AIInsightsWidget";
 
 interface CourierCODSettlement {
     pendingCOD: number;
@@ -149,6 +150,35 @@ const CourierDashboardContent = () => {
                 </Card>
             </div>
 
+            {/* Quick Actions */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid gap-3 md:grid-cols-3">
+                        <Link href="/courier/dashboard/available-legs">
+                            <Button className="w-full" size="lg" disabled={stats.approvalStatus !== "APPROVED"}>
+                                <Package className="h-5 w-5 mr-2" />
+                                Browse Available Legs
+                            </Button>
+                        </Link>
+                        <Link href="/courier/dashboard/my-active-legs">
+                            <Button variant="outline" className="w-full" size="lg">
+                                <Truck className="h-5 w-5 mr-2" />
+                                My Active Deliveries
+                            </Button>
+                        </Link>
+                        <Link href="/courier/dashboard/earnings">
+                            <Button variant="outline" className="w-full" size="lg">
+                                <Wallet className="h-5 w-5 mr-2" />
+                                View Earnings
+                            </Button>
+                        </Link>
+                    </div>
+                </CardContent>
+            </Card>
+
             {/* Availability Status */}
             <Card className={stats.availability 
                 ? "bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800"
@@ -179,34 +209,20 @@ const CourierDashboardContent = () => {
                 </CardContent>
             </Card>
 
-            {/* Quick Actions */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid gap-3 md:grid-cols-3">
-                        <Link href="/courier/dashboard/available-legs">
-                            <Button className="w-full" size="lg" disabled={stats.approvalStatus !== "APPROVED"}>
-                                <Package className="h-5 w-5 mr-2" />
-                                Browse Available Legs
-                            </Button>
-                        </Link>
-                        <Link href="/courier/dashboard/my-active-legs">
-                            <Button variant="outline" className="w-full" size="lg">
-                                <Truck className="h-5 w-5 mr-2" />
-                                My Active Deliveries
-                            </Button>
-                        </Link>
-                        <Link href="/courier/dashboard/earnings">
-                            <Button variant="outline" className="w-full" size="lg">
-                                <Wallet className="h-5 w-5 mr-2" />
-                                View Earnings
-                            </Button>
-                        </Link>
-                    </div>
-                </CardContent>
-            </Card>
+            {/* AI Insights — row 3 */}
+            <AIInsightsWidget
+                title="AI Performance Insights"
+                description="AI analysis of your delivery performance and earnings."
+                apiEndpoint="/api/ai-courier-insights"
+                payload={{
+                    totalEarnings: stats.totalEarnings,
+                    pendingCOD: stats.pendingCOD,
+                    completedLegs: stats.completedLegs,
+                    availability: stats.availability,
+                    approvalStatus: stats.approvalStatus,
+                }}
+                emptyText="Generate AI insights about your earnings, COD status, and delivery performance."
+            />
 
             {/* Recent Legs */}
             <Card>

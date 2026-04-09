@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Calculator } from "lucide-react";
+import { Calculator, Sparkles, Loader2 } from "lucide-react";
 
 const PACKAGE_TYPES = ["Documents", "Electronics", "Clothing", "Food", "Fragile", "Other"];
 
@@ -26,6 +26,8 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
     const router = useRouter();
     const [quote, setQuote] = useState<PriceQuote | null>(null);
     const [quoteError, setQuoteError] = useState<string | null>(null);
+    const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+    const [isExplaining, setIsExplaining] = useState(false);
 
     const { data: meData } = useGetMe();
     const userRole = meData?.data?.role;
@@ -43,12 +45,37 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
         onSuccess: (res) => {
             setQuote(res.data);
             setQuoteError(null);
+            setAiExplanation(null);
         },
         onError: () => {
             setQuote(null);
             setQuoteError("No pricing configured for this route. Contact admin.");
         },
     });
+
+    const explainPrice = async () => {
+        if (!quote) return;
+        setIsExplaining(true);
+        try {
+            const { pickupCity, deliveryCity, weight, priority } = {
+                pickupCity: form.getFieldValue("pickupCity" as never) as string,
+                deliveryCity: form.getFieldValue("deliveryCity" as never) as string,
+                weight: form.getFieldValue("weight" as never) as number,
+                priority: form.getFieldValue("priority" as never) as string,
+            };
+            const res = await fetch("/api/explain-price", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ pickupCity, deliveryCity, weight, priority, quote }),
+            });
+            const data = await res.json();
+            setAiExplanation(data.explanation ?? null);
+        } catch {
+            setAiExplanation("Unable to generate explanation right now.");
+        } finally {
+            setIsExplaining(false);
+        }
+    };
 
     const { mutateAsync: submitShipment, isPending } = useMutation({
         mutationFn: createShipment,
@@ -418,6 +445,33 @@ export default function CreateShipmentForm({ redirectTo }: { redirectTo: string 
                                             </div>
                                         </>
                                     )}
+
+                                    {/* AI Price Explainer */}
+                                    <Separator />
+                                    <div className="pt-1">
+                                        {aiExplanation ? (
+                                            <div className="rounded-xl bg-primary/5 border border-primary/15 p-3">
+                                                <div className="flex items-center gap-1.5 mb-1.5">
+                                                    <Sparkles className="size-3.5 text-primary" />
+                                                    <span className="text-xs font-semibold text-primary">AI Explanation</span>
+                                                </div>
+                                                <p className="text-xs text-muted-foreground leading-relaxed">{aiExplanation}</p>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={explainPrice}
+                                                disabled={isExplaining}
+                                                className="flex items-center gap-1.5 text-xs text-primary hover:underline disabled:opacity-50"
+                                            >
+                                                {isExplaining ? (
+                                                    <><Loader2 className="size-3.5 animate-spin" /> Explaining...</>
+                                                ) : (
+                                                    <><Sparkles className="size-3.5" /> Explain this price with AI</>
+                                                )}
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </CardContent>

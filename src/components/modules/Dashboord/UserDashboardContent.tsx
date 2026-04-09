@@ -7,6 +7,7 @@ import { useGetMyShipments } from "@/hooks/queries";
 import { useMemo } from "react";
 import { Package, Clock, Truck, PackageCheck, AlertCircle, ArrowRight, MapPin } from "lucide-react";
 import Link from "next/link";
+import { AIInsightsWidget } from "@/components/shared/AIInsightsWidget";
 
 const UserDashboardContent = () => {
     const { data: shipmentsResponse, isLoading } = useGetMyShipments({ limit: 100 });
@@ -185,6 +186,21 @@ const UserDashboardContent = () => {
                     )}
                 </CardContent>
             </Card>
+
+            {/* AI Insights */}
+            <AIInsightsWidget
+                title="AI Shipment Tips"
+                description="Personalized AI insights based on your shipment history."
+                apiEndpoint="/api/ai-user-insights"
+                payload={{
+                    total: stats.total,
+                    delivered: stats.delivered,
+                    pending: stats.pending,
+                    inTransit: stats.inTransit,
+                    cancelled: 0,
+                }}
+                emptyText="Generate personalized insights about your shipment history and delivery success."
+            />
 
             {/* Info Banner */}
             <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">

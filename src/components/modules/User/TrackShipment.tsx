@@ -12,15 +12,45 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Search } from "lucide-react";
+import { Search, Sparkles, Loader2 } from "lucide-react";
 
 export default function TrackShipment() {
     const [trackingNumber, setTrackingNumber] = useState("");
     const [result, setResult] = useState<Shipment | null>(null);
+    const [aiSummary, setAiSummary] = useState<string | null>(null);
+    const [isSummarizing, setIsSummarizing] = useState(false);
+
+    const summarizeShipment = async (shipment: Shipment, shipmentLegs: ShipmentLeg[]) => {
+        setIsSummarizing(true);
+        setAiSummary(null);
+        try {
+            const res = await fetch("/api/summarize-shipment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    trackingNumber: shipment.trackingNumber,
+                    status: shipment.status,
+                    pickupCity: shipment.pickupCity,
+                    deliveryCity: shipment.deliveryCity,
+                    events: shipment.events ?? [],
+                    legs: shipmentLegs,
+                }),
+            });
+            const data = await res.json();
+            setAiSummary(data.summary ?? null);
+        } catch {
+            setAiSummary("Unable to generate summary right now.");
+        } finally {
+            setIsSummarizing(false);
+        }
+    };
 
     const { mutate: track, isPending, error } = useMutation({
         mutationFn: (tn: string) => trackShipment(tn),
-        onSuccess: (res) => setResult(res.data),
+        onSuccess: (res) => {
+            setResult(res.data);
+            setAiSummary(null);
+        },
         onError: () => setResult(null),
     });
 
@@ -71,6 +101,35 @@ export default function TrackShipment() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3 text-sm">
+
+                        {/* AI Summary */}
+                        <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+                            <div className="flex items-center justify-between mb-1.5">
+                                <div className="flex items-center gap-1.5">
+                                    <Sparkles className="size-3.5 text-primary" />
+                                    <span className="text-xs font-semibold text-primary">AI Journey Summary</span>
+                                </div>
+                                {!aiSummary && !isSummarizing && (
+                                    <button
+                                        type="button"
+                                        onClick={() => summarizeShipment(result, legs)}
+                                        className="text-xs text-primary hover:underline"
+                                    >
+                                        Generate
+                                    </button>
+                                )}
+                            </div>
+                            {isSummarizing ? (
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <Loader2 className="size-3.5 animate-spin" />
+                                    Analyzing your shipment...
+                                </div>
+                            ) : aiSummary ? (
+                                <p className="text-xs text-muted-foreground leading-relaxed">{aiSummary}</p>
+                            ) : (
+                                <p className="text-xs text-muted-foreground">Click Generate for an AI summary of your shipment journey.</p>
+                            )}
+                        </div>
                         <div className="grid grid-cols-2 gap-2">
                             <div>
                                 <p className="text-muted-foreground">From</p>

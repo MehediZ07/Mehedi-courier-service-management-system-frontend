@@ -8,6 +8,7 @@ import { Package, Clock, PackageCheck, Bike, Users, Store, TrendingUp, AlertCirc
 import Link from "next/link";
 import ShipmentBarChart from "@/components/shared/ShipmentBarChart";
 import ShipmentPieChart from "@/components/shared/ShipmentPieChart";
+import { AIInsightsWidget } from "@/components/shared/AIInsightsWidget";
 
 const AdminDashboardContent = () => {
     const { data: shipmentsResponse, isLoading: shipmentsLoading } = useGetAllShipments({ limit: 1000 });
@@ -258,6 +259,34 @@ const AdminDashboardContent = () => {
                 <ShipmentBarChart data={barData} title="Shipment Trends" description="Monthly shipment statistics" />
                 <ShipmentPieChart data={pieData} title="Shipment Status" description="Distribution by current status" />
             </div>
+
+            {/* AI Insights */}
+            <AIInsightsWidget
+                title="AI Business Insights"
+                description="AI-powered analysis of platform data — shipments, couriers, merchants & settlements."
+                apiEndpoint="/api/ai-insights"
+                payload={{
+                    analytics: { totalVisits: 0, todayVisits: 0, liveUsers: 0 },
+                    shipments: {
+                        total: stats.totalShipments,
+                        delivered: stats.delivered,
+                        pending: stats.pending,
+                        inTransit: stats.inTransit,
+                        cancelled: 0,
+                    },
+                    couriers: {
+                        total: stats.totalCouriers,
+                        active: stats.activeCouriers,
+                        pending: stats.pendingCouriers,
+                        pendingCOD: stats.totalPendingCOD.toFixed(0),
+                    },
+                    merchants: {
+                        total: stats.totalMerchants,
+                        pendingSettlement: stats.totalPendingMerchantSettlement.toFixed(0),
+                    },
+                }}
+                emptyText="Generate AI-powered insights about your platform performance, courier network, and revenue health."
+            />
 
             {/* Quick Actions */}
             <Card>

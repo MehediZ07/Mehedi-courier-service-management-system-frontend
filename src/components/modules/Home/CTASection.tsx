@@ -4,10 +4,10 @@ import { ArrowRight, Bike, Store } from "lucide-react";
 
 export default function CTASection() {
   return (
-    <section className="py-24 bg-background">
+    <section className="py-14 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div
-          className="relative rounded-3xl overflow-hidden p-10 sm:p-16 text-center"
+          className="relative rounded-3xl overflow-hidden p-8 sm:p-12 text-center"
           style={{
             background:
               "linear-gradient(135deg, oklch(0.22 0.08 295) 0%, oklch(0.35 0.18 295) 50%, oklch(0.28 0.12 260) 100%)",

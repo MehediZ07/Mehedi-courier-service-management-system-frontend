@@ -1,8 +1,13 @@
+export { default as AISection } from "./AISection";
 export { default as Navbar } from "./Navbar";
 export { default as HeroSection } from "./HeroSection";
+export { default as StatsSection } from "./StatsSection";
 export { default as FeaturesSection } from "./FeaturesSection";
 export { default as HowItWorksSection } from "./HowItWorksSection";
+export { default as PartnersSection } from "./PartnersSection";
 export { default as TestimonialsSection } from "./TestimonialsSection";
 export { default as PricingSection } from "./PricingSection";
+export { default as FAQSection } from "./FAQSection";
+export { default as NewsletterSection } from "./NewsletterSection";
 export { default as CTASection } from "./CTASection";
 export { default as Footer } from "./Footer";

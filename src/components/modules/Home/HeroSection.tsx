@@ -19,62 +19,33 @@ export default function HeroSection() {
   const user = userData?.data;
 
   const handleStartShipping = () => {
-    if (!user) {
-      router.push("/register");
-      return;
-    }
-
-    // Redirect based on role
-    if (user.role === "SUPER_ADMIN" || user.role === "ADMIN") {
-      router.push("/admin/dashboard");
-    } else if (user.role === "COURIER") {
-      router.push("/courier/dashboard");
-    } else if (user.role === "MERCHANT") {
-      router.push("/merchant/dashboard/create-shipment");
-    } else {
-      router.push("/dashboard/create-shipment");
-    }
+    if (!user) { router.push("/register"); return; }
+    if (user.role === "SUPER_ADMIN" || user.role === "ADMIN") router.push("/admin/dashboard");
+    else if (user.role === "COURIER") router.push("/courier/dashboard");
+    else if (user.role === "MERCHANT") router.push("/merchant/dashboard/create-shipment");
+    else router.push("/dashboard/create-shipment");
   };
 
   const handleTrackPackage = () => {
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-
-    // Redirect based on role
-    if (user.role === "SUPER_ADMIN" || user.role === "ADMIN") {
-      router.push("/admin/dashboard");
-    } else if (user.role === "COURIER") {
-      router.push("/courier/dashboard");
-    } else if (user.role === "MERCHANT") {
-      router.push("/merchant/dashboard");
-    } else {
-      router.push("/dashboard/track");
-    }
+    if (!user) { router.push("/login"); return; }
+    if (user.role === "SUPER_ADMIN" || user.role === "ADMIN") router.push("/admin/dashboard");
+    else if (user.role === "COURIER") router.push("/courier/dashboard");
+    else if (user.role === "MERCHANT") router.push("/merchant/dashboard");
+    else router.push("/dashboard/track");
   };
-  return (
-    <section className="relative pt-24 pb-20 overflow-hidden bg-gradient-to-br from-background via-secondary/30 to-background">
-      {/* Background blobs */}
-      <div
-        aria-hidden
-        className="absolute -top-32 -right-32 size-[600px] rounded-full opacity-20 blur-3xl"
-        style={{ background: "oklch(0.52 0.26 295)" }}
-      />
-      <div
-        aria-hidden
-        className="absolute -bottom-32 -left-32 size-[500px] rounded-full opacity-15 blur-3xl"
-        style={{ background: "oklch(0.72 0.15 195)" }}
-      />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  return (
+    <section className="relative min-h-[65vh] pt-24 pb-14 overflow-hidden bg-gradient-to-br from-background via-secondary/30 to-background flex items-center">
+      {/* Background blobs */}
+      <div aria-hidden className="absolute -top-32 -right-32 size-[600px] rounded-full opacity-20 blur-3xl" style={{ background: "oklch(0.52 0.26 295)" }} />
+      <div aria-hidden className="absolute -bottom-32 -left-32 size-[500px] rounded-full opacity-15 blur-3xl" style={{ background: "oklch(0.72 0.15 195)" }} />
+
+      <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left — copy */}
-          <div className="flex flex-col gap-6">
-            <Badge
-              variant="secondary"
-              className="w-fit gap-1.5 text-primary border border-primary/20 bg-primary/10"
-            >
+
+          {/* Left — fade-up via CSS */}
+          <div className="flex flex-col gap-6 animate-[fadeUp_0.6s_ease-out_both]">
+            <Badge variant="secondary" className="w-fit gap-1.5 text-primary border border-primary/20 bg-primary/10">
               <Package className="size-3.5" />
               Trusted by 500+ Merchants
             </Badge>
@@ -83,19 +54,15 @@ export default function HeroSection() {
               Deliver Faster.{" "}
               <span
                 className="bg-clip-text text-transparent"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(135deg, oklch(0.52 0.26 295), oklch(0.72 0.15 195))",
-                }}
+                style={{ backgroundImage: "linear-gradient(135deg, oklch(0.52 0.26 295), oklch(0.72 0.15 195))" }}
               >
                 Track Smarter.
               </span>
             </h1>
 
             <p className="text-lg text-muted-foreground max-w-lg leading-relaxed">
-              SwiftShip connects merchants, couriers, and customers on one
-              powerful platform. Real-time tracking, instant assignments, and
-              seamless payments — all in one place.
+              SwiftShip connects merchants, couriers, and customers on one powerful platform.
+              Real-time tracking, instant assignments, and seamless payments — all in one place.
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -118,8 +85,8 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* Right — visual card */}
-          <div className="relative flex justify-center lg:justify-end">
+          {/* Right — slide-in via CSS */}
+          <div className="relative flex justify-center lg:justify-end animate-[fadeInRight_0.7s_0.2s_ease-out_both]">
             <div className="relative w-full max-w-md">
               {/* Main card */}
               <div className="rounded-2xl border border-border bg-card shadow-2xl p-6 flex flex-col gap-5">
@@ -131,7 +98,6 @@ export default function HeroSection() {
                   </span>
                 </div>
 
-                {/* Tracking progress */}
                 <div className="flex flex-col gap-3">
                   {[
                     { label: "Order Placed", done: true },
@@ -141,24 +107,8 @@ export default function HeroSection() {
                     { label: "Delivered", done: false },
                   ].map((step, i) => (
                     <div key={i} className="flex items-center gap-3">
-                      <div
-                        className={`size-3 rounded-full flex-shrink-0 ${
-                          step.active
-                            ? "bg-primary ring-4 ring-primary/20"
-                            : step.done
-                            ? "bg-primary"
-                            : "bg-border"
-                        }`}
-                      />
-                      <span
-                        className={`text-sm ${
-                          step.active
-                            ? "font-semibold text-primary"
-                            : step.done
-                            ? "text-foreground"
-                            : "text-muted-foreground"
-                        }`}
-                      >
+                      <div className={`size-3 rounded-full flex-shrink-0 ${step.active ? "bg-primary ring-4 ring-primary/20" : step.done ? "bg-primary" : "bg-border"}`} />
+                      <span className={`text-sm ${step.active ? "font-semibold text-primary" : step.done ? "text-foreground" : "text-muted-foreground"}`}>
                         {step.label}
                       </span>
                     </div>
@@ -182,9 +132,7 @@ export default function HeroSection() {
 
               {/* Floating courier card */}
               <div className="absolute -bottom-4 -right-4 bg-card border border-border rounded-xl px-3 py-2 shadow-lg flex items-center gap-2">
-                <div className="size-8 rounded-full bg-accent/20 flex items-center justify-center text-accent-foreground font-bold text-sm">
-                  R
-                </div>
+                <div className="size-8 rounded-full bg-accent/20 flex items-center justify-center text-accent-foreground font-bold text-sm">R</div>
                 <div>
                   <p className="text-xs font-semibold text-foreground">Rider: Rafiq</p>
                   <p className="text-xs text-muted-foreground">⭐ 4.9 · 1.2 km away</p>
@@ -193,6 +141,16 @@ export default function HeroSection() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Scroll hint */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-muted-foreground hover:text-primary transition-colors animate-bounce">
+        <a href="#features" aria-label="Scroll to features" className="flex flex-col items-center gap-1">
+          <span className="text-xs font-medium">Explore</span>
+          <svg xmlns="http://www.w3.org/2000/svg" className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </a>
       </div>
     </section>
   );

@@ -12,11 +12,38 @@ import { useQuery } from "@tanstack/react-query";
 import { trackShipment } from "@/services/shipment.services";
 import { Shipment } from "@/types/shipment.types";
 import { toast } from "sonner";
-import { Search, Package, MapPin, Clock, User, Phone, CheckCircle2, Truck, AlertCircle } from "lucide-react";
+import { Search, Package, MapPin, Clock, User, Phone, CheckCircle2, Truck, AlertCircle, Sparkles, Loader2 } from "lucide-react";
 
 export default function CourierTrackShipment() {
     const [trackingNumber, setTrackingNumber] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
+    const [aiSummary, setAiSummary] = useState<string | null>(null);
+    const [isSummarizing, setIsSummarizing] = useState(false);
+
+    const summarizeShipment = async (shipment: Shipment) => {
+        setIsSummarizing(true);
+        setAiSummary(null);
+        try {
+            const res = await fetch("/api/summarize-shipment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    trackingNumber: shipment.trackingNumber,
+                    status: shipment.status,
+                    pickupCity: shipment.pickupCity,
+                    deliveryCity: shipment.deliveryCity,
+                    events: shipment.events ?? [],
+                    legs: shipment.legs ?? [],
+                }),
+            });
+            const data = await res.json();
+            setAiSummary(data.summary ?? null);
+        } catch {
+            setAiSummary("Unable to generate summary right now.");
+        } finally {
+            setIsSummarizing(false);
+        }
+    };
 
     const { data, isLoading, error } = useQuery({
         queryKey: ["track-shipment", searchTerm],
@@ -31,6 +58,7 @@ export default function CourierTrackShipment() {
             toast.error("Please enter a tracking number");
             return;
         }
+        setAiSummary(null);
         setSearchTerm(trackingNumber.trim());
     };
 
@@ -117,6 +145,39 @@ export default function CourierTrackShipment() {
                                 </div>
                             </div>
                         </CardHeader>
+                    </Card>
+
+                    {/* AI Journey Summary */}
+                    <Card className="border-primary/20 bg-primary/5">
+                        <CardContent className="pt-4 pb-4">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-1.5">
+                                    <Sparkles className="size-4 text-primary" />
+                                    <span className="text-sm font-semibold text-primary">AI Journey Summary</span>
+                                </div>
+                                {!aiSummary && !isSummarizing && (
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="h-7 text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+                                        onClick={() => summarizeShipment(shipment)}
+                                    >
+                                        <Sparkles className="size-3" />
+                                        Generate
+                                    </Button>
+                                )}
+                            </div>
+                            {isSummarizing ? (
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                    <Loader2 className="size-4 animate-spin text-primary" />
+                                    Analyzing shipment journey...
+                                </div>
+                            ) : aiSummary ? (
+                                <p className="text-sm text-muted-foreground leading-relaxed">{aiSummary}</p>
+                            ) : (
+                                <p className="text-xs text-muted-foreground">Click Generate for an AI-powered summary of this shipment&apos;s journey.</p>
+                            )}
+                        </CardContent>
                     </Card>
 
                     {/* Pickup & Delivery Cards */}

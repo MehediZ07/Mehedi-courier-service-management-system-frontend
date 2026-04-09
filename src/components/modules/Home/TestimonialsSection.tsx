@@ -63,10 +63,10 @@ function Stars({ count }: { count: number }) {
 
 export default function TestimonialsSection() {
   return (
-    <section id="testimonials" className="py-24 bg-background">
+    <section id="testimonials" className="py-14 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
+        <div className="text-center max-w-2xl mx-auto mb-10">
           <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-3">
             Loved by Users
           </p>

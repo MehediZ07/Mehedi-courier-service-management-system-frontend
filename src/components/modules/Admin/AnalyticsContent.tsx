@@ -6,6 +6,7 @@ import { AnalyticsStats } from "@/components/modules/Admin/AnalyticsStats";
 import { VisitsDataTable } from "@/components/modules/Admin/VisitsDataTable";
 import { VisitorTrendsChart } from "@/components/modules/Admin/VisitorTrendsChart";
 import { UserRoleChart } from "@/components/modules/Admin/UserRoleChart";
+import { AIInsightsCard } from "@/components/modules/Admin/AIInsightsCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
@@ -58,6 +59,14 @@ export function AnalyticsContent() {
         totalVisits={data.totalVisits}
         todayVisits={data.todayVisits}
         liveUsers={data.liveUsers}
+      />
+
+      <AIInsightsCard
+        analytics={{
+          totalVisits: data.totalVisits,
+          todayVisits: data.todayVisits,
+          liveUsers: data.liveUsers,
+        }}
       />
       
       <div className="grid gap-4 grid-cols-1 md:grid-cols-6">

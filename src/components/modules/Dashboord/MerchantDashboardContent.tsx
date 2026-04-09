@@ -10,6 +10,7 @@ import { useMemo } from "react";
 import { Package, Clock, Truck, PackageCheck, TrendingUp, DollarSign, AlertCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type { ApiResponse } from "@/types/api.types";
+import { AIInsightsWidget } from "@/components/shared/AIInsightsWidget";
 
 interface MerchantSettlement {
     pendingSettlement: number;
@@ -123,6 +124,35 @@ const MerchantDashboardContent = () => {
                 </Card>
             </div>
 
+            {/* Quick Actions */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid gap-3 md:grid-cols-3">
+                        <Link href="/merchant/dashboard/create-shipment">
+                            <Button className="w-full" size="lg">
+                                <Package className="h-5 w-5 mr-2" />
+                                Create New Shipment
+                            </Button>
+                        </Link>
+                        <Link href="/merchant/dashboard/track-shipment">
+                            <Button variant="outline" className="w-full" size="lg">
+                                <Truck className="h-5 w-5 mr-2" />
+                                Track Shipment
+                            </Button>
+                        </Link>
+                        <Link href="/merchant/dashboard/my-shipments">
+                            <Button variant="outline" className="w-full" size="lg">
+                                <PackageCheck className="h-5 w-5 mr-2" />
+                                View All Shipments
+                            </Button>
+                        </Link>
+                    </div>
+                </CardContent>
+            </Card>
+
             {/* Financial Overview */}
             <div className="grid gap-4 md:grid-cols-2">
                 <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 border-green-200 dark:border-green-800">
@@ -170,34 +200,22 @@ const MerchantDashboardContent = () => {
                 </Card>
             </div>
 
-            {/* Quick Actions */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid gap-3 md:grid-cols-3">
-                        <Link href="/merchant/dashboard/create-shipment">
-                            <Button className="w-full" size="lg">
-                                <Package className="h-5 w-5 mr-2" />
-                                Create New Shipment
-                            </Button>
-                        </Link>
-                        <Link href="/merchant/dashboard/track-shipment">
-                            <Button variant="outline" className="w-full" size="lg">
-                                <Truck className="h-5 w-5 mr-2" />
-                                Track Shipment
-                            </Button>
-                        </Link>
-                        <Link href="/merchant/dashboard/my-shipments">
-                            <Button variant="outline" className="w-full" size="lg">
-                                <PackageCheck className="h-5 w-5 mr-2" />
-                                View All Shipments
-                            </Button>
-                        </Link>
-                    </div>
-                </CardContent>
-            </Card>
+            {/* AI Insights */}
+            <AIInsightsWidget
+                title="AI Shipment Insights"
+                description="AI analysis of your shipment performance and revenue health."
+                apiEndpoint="/api/ai-merchant-insights"
+                payload={{
+                    total: stats.total,
+                    delivered: stats.delivered,
+                    pending: stats.pending,
+                    inTransit: stats.inTransit,
+                    cancelled: 0,
+                    totalRevenue: stats.totalRevenue,
+                    pendingSettlement: stats.pendingSettlement,
+                }}
+                emptyText="Generate AI insights about your delivery success rate, revenue, and settlement status."
+            />
 
             {/* Recent Shipments */}
             <Card>

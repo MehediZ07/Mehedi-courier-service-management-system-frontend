@@ -1,5 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import QueryProviders from "@/providers/QueryProvider";
+import { ThemeProvider } from "@/providers/ThemeProvider";
+import Chatbot from "@/components/shared/Chatbot";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -32,14 +34,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <QueryProviders>
-          {children}
-          <Toaster position="top-right" richColors />
-        </QueryProviders>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ThemeProvider>
+          <QueryProviders>
+            {children}
+            <Toaster position="top-right" richColors />
+            <Chatbot />
+          </QueryProviders>
+        </ThemeProvider>
       </body>
     </html>
   );

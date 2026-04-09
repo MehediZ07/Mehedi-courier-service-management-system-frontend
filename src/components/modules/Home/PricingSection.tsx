@@ -75,10 +75,10 @@ function formatBDT(amount: number) {
 
 export default function PricingSection() {
     return (
-        <section id="pricing" className="py-24 bg-secondary/20">
+        <section id="pricing" className="py-14 bg-secondary/20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
-                <div className="text-center max-w-2xl mx-auto mb-6">
+                <div className="text-center max-w-2xl mx-auto mb-4">
                     <p className="text-sm font-semibold text-primary uppercase tracking-widest mb-3">
                         Transparent Shipping Rates
                     </p>
@@ -91,7 +91,7 @@ export default function PricingSection() {
                 </div>
 
                 {/* Formula pill */}
-                <div className="flex justify-center mb-14">
+                <div className="flex justify-center mb-10">
                     <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-5 py-2 text-sm text-primary font-medium">
                         <Calculator className="w-4 h-4" />
                         Base Price + (Weight × Per Kg) + Express Surcharge
@@ -207,10 +207,14 @@ export default function PricingSection() {
                 </div>
 
                 {/* Bottom note */}
-                <p className="text-center text-sm text-muted-foreground mt-12">
+                <p className="text-center text-sm text-muted-foreground mt-8">
                     Want to check the exact cost before shipping?{" "}
                     <Link href="/register" className="text-primary font-medium hover:underline">
                         Get a free price quote →
+                    </Link>
+                    {" · "}
+                    <Link href="/services" className="text-primary font-medium hover:underline">
+                        Compare all plans →
                     </Link>
                 </p>
             </div>
