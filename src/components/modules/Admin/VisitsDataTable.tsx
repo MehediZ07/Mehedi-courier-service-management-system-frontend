@@ -14,6 +14,7 @@ import type { PaginatedApiResponse } from "@/types/api.types";
 
 interface Visit {
   id: string;
+  sessionId?: string;
   ip?: string;
   userAgent?: string;
   userId?: string;
@@ -39,7 +40,7 @@ const columns: ColumnDef<Visit>[] = [
           <div className="text-xs text-muted-foreground">{row.original.userEmail || "—"}</div>
         </div>
       ) : (
-        <span className="text-muted-foreground">—</span>
+        <span className="text-muted-foreground">Guest</span>
       )
     ),
   },
@@ -49,6 +50,19 @@ const columns: ColumnDef<Visit>[] = [
     cell: ({ row }) => (
       row.original.userRole ? (
         <Badge variant="outline">{row.original.userRole}</Badge>
+      ) : (
+        <Badge variant="secondary">GUEST</Badge>
+      )
+    ),
+  },
+  {
+    accessorKey: "sessionId",
+    header: "Session",
+    cell: ({ row }) => (
+      row.original.sessionId ? (
+        <span className="font-mono text-xs text-muted-foreground">
+          {row.original.sessionId.slice(0, 8)}...
+        </span>
       ) : (
         <span className="text-muted-foreground">—</span>
       )

@@ -12,6 +12,7 @@ import {
     acceptLeg,
     markLegPickedUp,
     markLegDelivered,
+    markDeliveryRefused,
 } from "@/services/shipmentLeg.services";
 import type { UpdateLegStatusPayload } from "@/types/shipmentLeg.types";
 
@@ -127,6 +128,17 @@ export function useMarkLegDelivered() {
 
     return useMutation({
         mutationFn: ({ id, payload }: { id: string; payload?: UpdateLegStatusPayload }) => markLegDelivered(id, payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: legKeys.myActiveBase() });
+        },
+    });
+}
+
+export function useMarkDeliveryRefused() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, reason }: { id: string; reason?: string }) => markDeliveryRefused(id, reason),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: legKeys.myActiveBase() });
         },

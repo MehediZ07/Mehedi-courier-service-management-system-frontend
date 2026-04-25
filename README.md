@@ -8,16 +8,8 @@ Frontend for SwiftShip, a full-featured courier and delivery management platform
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38BDF8)](https://tailwindcss.com/)
 
 ---
-
-## Screenshots
-
-**Homepage**
-
-![SwiftShip Homepage](./public/Homepage.jpeg)
-
-**Dashboard**
-
-![SwiftShip Dashboard](./public/Dashboard.png)
+![SwiftShip Frontend](./public/SwiftShip-Frontend.png)
+![SwiftShip](./public/SwiftShip.png)
 
 ---
 
@@ -212,6 +204,14 @@ Route access is enforced by the middleware in `src/proxy.ts`. Unauthenticated us
 - Print shipping labels and leg stickers
 - Bulk carton label printing
 - Shipment cancellation support
+
+### Return System
+- Delivery refusal handling with automatic return leg creation
+- Reverse routing from delivery location back to origin hub
+- Single return shipping charge (equal to original delivery cost)
+- Infinite loop protection -- stores package at nearest hub after second refusal
+- Return reason tracking and notifications
+- Automatic shipment status updates to RETURNED
 
 ### Shipment Creation
 - No manual amount input -- price is fetched live from `/pricing/calculate` as you fill in city and weight

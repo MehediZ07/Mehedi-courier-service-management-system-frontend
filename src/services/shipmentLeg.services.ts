@@ -41,3 +41,12 @@ export async function markLegPickedUp(id: string) {
 export async function markLegDelivered(id: string, payload?: UpdateLegStatusPayload) {
     return clientHttpClient.patch<ShipmentLeg>(`/legs/${id}/deliver`, payload || {});
 }
+
+export async function markDeliveryRefused(id: string, reason?: string) {
+    return clientHttpClient.patch<{
+        leg: ShipmentLeg; 
+        returnLegs: ShipmentLeg[]; 
+        returnShippingCost: number;
+        storedAtHub?: { id: string; name: string; address: string; city: string };
+    }>(`/legs/${id}/refuse-delivery`, { reason });
+}

@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import QueryProviders from "@/providers/QueryProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import Chatbot from "@/components/shared/Chatbot";
+import { PageTracker } from "@/components/shared/PageTracker";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -38,6 +39,7 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
           <QueryProviders>
+            <PageTracker />
             {children}
             <Toaster position="top-right" richColors />
             <Chatbot />

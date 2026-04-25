@@ -211,7 +211,7 @@ export default function TrackShipment() {
                                                     <p className="font-medium">{event.status}</p>
                                                     {event.note && <p className="text-xs text-muted-foreground">{event.note}</p>}
                                                     <p className="text-xs text-muted-foreground">
-                                                        {new Date(event.createdAt).toLocaleString()}
+                                                        {new Date(event.timestamp).toLocaleString()}
                                                     </p>
                                                 </div>
                                             </div>

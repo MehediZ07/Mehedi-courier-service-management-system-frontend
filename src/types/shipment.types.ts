@@ -49,7 +49,7 @@ export interface ShipmentEvent {
     shipmentId: string;
     status: ShipmentStatus;
     note?: string;
-    createdAt: string;
+    timestamp: string;
 }
 
 export interface ShipmentPayment {

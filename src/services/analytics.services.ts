@@ -5,6 +5,7 @@ import { clientHttpClient } from "@/lib/axios/clientHttpClient";
 
 interface Visit {
   id: string;
+  sessionId?: string;
   ip?: string;
   userAgent?: string;
   userId?: string;
@@ -18,21 +19,32 @@ interface Visit {
 interface AnalyticsData {
   totalVisits: number;
   todayVisits: number;
+  uniqueVisitorsToday: number;
   liveUsers: number;
   recentVisits: Visit[];
 }
 
-export const trackVisit = async (page?: string) => {
+interface PageViewStat {
+  id: string;
+  page: string;
+  date: string;
+  hour: number;
+  userRole: string;
+  viewCount: number;
+  createdAt: string;
+}
+
+export const trackVisit = async (data: { page?: string; sessionId?: string; isNewSession?: boolean; visitedPages?: string[] }) => {
   try {
-    await httpClient.post("/analytics/track", { page });
+    await httpClient.post("/analytics/track", data);
   } catch (error) {
     console.error("Failed to track visit:", error);
   }
 };
 
-export const trackGuestVisit = async (page?: string) => {
+export const trackGuestVisit = async (data: { page?: string; sessionId?: string; isNewSession?: boolean; visitedPages?: string[] }) => {
   try {
-    await clientHttpClient.post("/analytics/track-guest", { page });
+    await clientHttpClient.post("/analytics/track-guest", data);
   } catch (error) {
     console.error("Failed to track guest visit:", error);
   }
@@ -46,4 +58,9 @@ export const getAnalytics = async (): Promise<AnalyticsData> => {
 export const getAllVisits = async (params: Record<string, unknown>) => {
   const response = await httpClient.get("/analytics/visits", { params });
   return response;
+};
+
+export const getPageStats = async (params?: { days?: number }): Promise<PageViewStat[]> => {
+  const response = await httpClient.get<PageViewStat[]>("/analytics/page-stats", { params });
+  return response.data;
 };

@@ -5,7 +5,7 @@ import StatusBadgeCell from "@/components/shared/cell/StatusBadgeCell";
 import { useServerManagedDataTable } from "@/hooks/useServerManagedDataTable";
 import { useServerManagedDataTableSearch } from "@/hooks/useServerManagedDataTableSearch";
 import { useServerManagedDataTableFilters, serverManagedFilter } from "@/hooks/useServerManagedDataTableFilters";
-import { useGetMyCourierLegs, useMarkLegPickedUp, useMarkLegDelivered } from "@/hooks/useShipmentLegs";
+import { useGetMyCourierLegs, useMarkLegPickedUp, useMarkLegDelivered, useMarkDeliveryRefused } from "@/hooks/useShipmentLegs";
 import { ShipmentLeg } from "@/types/shipmentLeg.types";
 import { ColumnDef } from "@tanstack/react-table";
 import { useSearchParams } from "next/navigation";
@@ -178,6 +178,9 @@ export default function MyActiveLegs() {
     const [viewLeg, setViewLeg] = useState<ShipmentLeg | null>(null);
     const [note, setNote] = useState("");
     const [codCollected, setCodCollected] = useState(false);
+    const [returnReason, setReturnReason] = useState("");
+    const [showReturnDialog, setShowReturnDialog] = useState(false);
+    const [legToReturn, setLegToReturn] = useState<ShipmentLeg | null>(null);
 
     const [pickingUpIds, setPickingUpIds] = useState<Set<string>>(new Set());
 
@@ -200,6 +203,7 @@ export default function MyActiveLegs() {
     const { data, isLoading } = useGetMyCourierLegs(queryParams);
     const { mutate: markPickedUp } = useMarkLegPickedUp();
     const { mutate: markDelivered, isPending: isDelivering } = useMarkLegDelivered();
+    const { mutate: markRefused, isPending: isRefusing } = useMarkDeliveryRefused();
 
     const legs: ShipmentLeg[] = data?.data ?? [];
     const meta = data?.meta;
@@ -254,6 +258,35 @@ export default function MyActiveLegs() {
         );
     };
 
+    const handleReturn = () => {
+        if (!legToReturn || !returnReason.trim()) {
+            toast.error("Please provide a reason for return");
+            return;
+        }
+
+        markRefused(
+            { id: legToReturn.id, reason: returnReason },
+            {
+                onSuccess: (response) => {
+                    // Response is ApiResponse<{ leg, returnLegs, returnShippingCost, storedAtHub? }>
+                    const result = response.data;
+                    
+                    if (result.returnLegs && result.returnLegs.length > 0) {
+                        toast.success("Return initiated. Package will be sent back to sender.");
+                    } else if (result.storedAtHub) {
+                        toast.success(`Package stored at ${result.storedAtHub.name}. Both parties refused delivery.`);
+                    } else {
+                        toast.success("Return processed successfully.");
+                    }
+                    setShowReturnDialog(false);
+                    setLegToReturn(null);
+                    setReturnReason("");
+                },
+                onError: (e: Error) => toast.error(e.message),
+            }
+        );
+    };
+
     const columnsWithAction: ColumnDef<ShipmentLeg>[] = [
         ...columns,
         {
@@ -278,6 +311,9 @@ export default function MyActiveLegs() {
                     );
                 }
                 if (leg.status === "IN_PROGRESS") {
+                    // Return button only for customer-facing deliveries (not hub-to-hub transfers)
+                    const isCustomerDelivery = leg.legType === "DIRECT" || (leg.legType === "DELIVERY" && leg.destType === "ADDRESS");
+                    
                     return (
                         <div className="flex gap-1">
                             {leg.shipment?.deliveryPhone && <PhoneButton phone={leg.shipment.deliveryPhone} />}
@@ -288,6 +324,14 @@ export default function MyActiveLegs() {
                             <Button size="sm" onClick={() => setSelectedLeg(leg)}>
                                 Deliver
                             </Button>
+                            {isCustomerDelivery && (
+                                <Button size="sm" variant="destructive" onClick={() => {
+                                    setLegToReturn(leg);
+                                    setShowReturnDialog(true);
+                                }}>
+                                    Return
+                                </Button>
+                            )}
                         </div>
                     );
                 }
@@ -323,6 +367,52 @@ export default function MyActiveLegs() {
             />
 
             {viewLeg && <ViewLegDetails leg={viewLeg} onClose={() => setViewLeg(null)} />}
+
+            <Dialog open={showReturnDialog} onOpenChange={(open) => {
+                if (!open) {
+                    setShowReturnDialog(false);
+                    setLegToReturn(null);
+                    setReturnReason("");
+                }
+            }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Return Package to Sender</DialogTitle>
+                    </DialogHeader>
+                    {legToReturn && (
+                        <div className="space-y-4 pt-2">
+                            <div className="bg-yellow-50 dark:bg-yellow-950/20 p-4 rounded-lg">
+                                <p className="text-sm font-semibold mb-2">⚠️ Delivery Failed</p>
+                                <p className="text-sm text-muted-foreground">
+                                    This will create return legs to send the package back to the sender.
+                                    The sender will be charged for return shipping (same as original delivery cost).
+                                </p>
+                            </div>
+                            <div className="text-sm space-y-1">
+                                <p><strong>Tracking:</strong> {legToReturn.shipment?.trackingNumber}</p>
+                                <p><strong>Return Cost:</strong> {legToReturn.shipment?.pricing?.totalPrice} BDT</p>
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label>Reason for Return *</Label>
+                                <Textarea
+                                    value={returnReason}
+                                    onChange={(e) => setReturnReason(e.target.value)}
+                                    placeholder="e.g., Receiver refused delivery, Wrong address, COD payment refused..."
+                                    rows={3}
+                                />
+                            </div>
+                            <div className="flex gap-2">
+                                <Button variant="outline" onClick={() => setShowReturnDialog(false)} className="flex-1">
+                                    Cancel
+                                </Button>
+                                <Button variant="destructive" onClick={handleReturn} disabled={isRefusing} className="flex-1">
+                                    {isRefusing ? "Processing..." : "Confirm Return"}
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
 
             <Dialog open={!!selectedLeg} onOpenChange={(open) => {
                 if (!open) {

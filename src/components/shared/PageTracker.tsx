@@ -1,16 +1,16 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
-export const useTrackVisit = (page?: string) => {
+export function PageTracker() {
+  const pathname = usePathname();
+
   useEffect(() => {
-    if (!page) return;
-
-    const trackVisitClient = async () => {
+    const trackVisit = async () => {
       try {
-        // Generate or retrieve session ID (valid for 24 hours)
         const SESSION_KEY = 'visit_session';
-        const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+        const SESSION_DURATION = 24 * 60 * 60 * 1000;
         
         const now = Date.now();
         const storedSession = sessionStorage.getItem(SESSION_KEY);
@@ -24,23 +24,19 @@ export const useTrackVisit = (page?: string) => {
           const isExpired = now - timestamp > SESSION_DURATION;
           
           if (isExpired) {
-            // Session expired, create new session
             sessionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
             isNewSession = true;
-            visitedPages = [page];
+            visitedPages = [pathname];
           } else {
-            // Continue existing session
             sessionId = id;
-            visitedPages = pages.includes(page) ? pages : [...pages, page];
+            visitedPages = pages.includes(pathname) ? pages : [...pages, pathname];
           }
         } else {
-          // New session
           sessionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
           isNewSession = true;
-          visitedPages = [page];
+          visitedPages = [pathname];
         }
         
-        // Update session storage
         sessionStorage.setItem(SESSION_KEY, JSON.stringify({
           id: sessionId,
           timestamp: now,
@@ -52,9 +48,12 @@ export const useTrackVisit = (page?: string) => {
         
         await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}${endpoint}`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            ...(hasToken && { "Authorization": `Bearer ${document.cookie.split('accessToken=')[1]?.split(';')[0]}` })
+          },
           body: JSON.stringify({ 
-            page, 
+            page: pathname, 
             sessionId,
             isNewSession,
             visitedPages 
@@ -66,6 +65,8 @@ export const useTrackVisit = (page?: string) => {
       }
     };
 
-    trackVisitClient();
-  }, [page]);
-};
+    trackVisit();
+  }, [pathname]);
+
+  return null;
+}

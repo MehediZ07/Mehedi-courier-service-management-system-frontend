@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { HubTransferPrint } from "@/components/shared/HubTransferPrint";
 import { BulkCartonLabel } from "@/components/shared/BulkCartonLabel";
@@ -29,6 +30,8 @@ interface HubTransferGroup {
   count: number;
   isUnlocked: boolean;
   blockedReason?: string;
+  readyCount?: number;
+  blockedCount?: number;
 }
 
 const findFirstIncompletePriorLeg = (
@@ -40,7 +43,12 @@ const findFirstIncompletePriorLeg = (
     .filter((l) => l.legNumber < leg.legNumber)
     .sort((a, b) => a.legNumber - b.legNumber);
 
-  return siblings.find((l) => l.status !== "COMPLETED") ?? null;
+  // Allow COMPLETED or FAILED status for prior legs (FAILED is valid for return journeys)
+  return siblings.find((l) => l.status !== "COMPLETED" && l.status !== "FAILED") ?? null;
+};
+
+const isLegReady = (leg: ShipmentLeg): boolean => {
+  return !findFirstIncompletePriorLeg(leg);
 };
 
 export default function HubTransfers() {
@@ -53,6 +61,7 @@ export default function HubTransfers() {
   const [destFilter, setDestFilter] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [selectedLegIds, setSelectedLegIds] = useState<Set<string>>(new Set());
 
   const { data, isLoading } = useGetAllLegs({ legType: "HUB_TRANSFER", limit: 1000 });
   const releaseMutation = useReleaseHubTransfer();
@@ -120,27 +129,41 @@ export default function HubTransfers() {
       acc[key].legs.push(leg);
       acc[key].count++;
 
-      const incomplete = findFirstIncompletePriorLeg(leg);
-      if (incomplete) {
-        acc[key].isUnlocked = false;
-        const existingLegNum = acc[key].blockedReason
-          ? parseInt(acc[key].blockedReason!.match(/Leg (\d+)/)?.[1] ?? "99", 10)
-          : 99;
-        if (incomplete.legNumber < existingLegNum) {
-          acc[key].blockedReason = `Leg ${incomplete.legNumber} (${incomplete.legType}) must be COMPLETED first. Current status: ${incomplete.status}.`;
-        }
-      }
-
       return acc;
     },
     {} as Record<string, HubTransferGroup>,
   );
 
+  // Separate ready and blocked legs for each group
+  Object.values(groupedTransfers).forEach((group) => {
+    if (group.legs[0]?.status === 'PENDING') {
+      const readyLegs = group.legs.filter(isLegReady);
+      const blockedLegs = group.legs.filter(leg => !isLegReady(leg));
+      
+      // Group is fully unlocked if ALL legs are ready
+      group.isUnlocked = readyLegs.length === group.legs.length;
+      
+      // Store counts for partial release
+      group.readyCount = readyLegs.length;
+      group.blockedCount = blockedLegs.length;
+      
+      // Generate blocked reason from first blocked leg
+      if (blockedLegs.length > 0) {
+        const firstBlocked = blockedLegs[0];
+        const incomplete = findFirstIncompletePriorLeg(firstBlocked);
+        if (incomplete) {
+          group.blockedReason = `${blockedLegs.length} shipment${blockedLegs.length !== 1 ? 's' : ''} blocked: Leg ${incomplete.legNumber} (${incomplete.legType}) must be COMPLETED first.`;
+        }
+      }
+    }
+  });
+
   const transfers = Object.values(groupedTransfers);
 
   const pendingTransfers = transfers.filter((t) => t.legs[0]?.status === "PENDING");
   const unlockedPending = pendingTransfers.filter((t) => t.isUnlocked);
-  const lockedPending = pendingTransfers.filter((t) => !t.isUnlocked);
+  const partiallyReadyPending = pendingTransfers.filter((t) => !t.isUnlocked && (t.readyCount ?? 0) > 0);
+  const fullyLockedPending = pendingTransfers.filter((t) => !t.isUnlocked && (t.readyCount ?? 0) === 0);
 
   const inProgressTransfers = transfers.filter((t) => t.legs[0]?.status === "IN_PROGRESS");
   const completedTransfers = transfers.filter((t) => t.legs[0]?.status === "COMPLETED");
@@ -151,15 +174,19 @@ export default function HubTransfers() {
   const totalCompletedShipments = completedTransfers.reduce((sum, t) => sum + t.count, 0);
 
   const handleRelease = () => {
-    if (!selectedGroup) return;
+    if (!selectedGroup || selectedLegIds.size === 0) {
+      toast.error("Please select at least one shipment");
+      return;
+    }
     releaseMutation.mutate(
-      { legIds: selectedGroup.legs.map((l) => l.id), note: note || undefined },
+      { legIds: Array.from(selectedLegIds), note: note || undefined },
       {
         onSuccess: () => {
-          toast.success(`Released ${selectedGroup.count} shipments for hub transfer`);
+          toast.success(`Released ${selectedLegIds.size} shipment${selectedLegIds.size !== 1 ? 's' : ''} for hub transfer`);
           setSelectedGroup(null);
           setNote("");
           setAction(null);
+          setSelectedLegIds(new Set());
         },
         onError: (err: Error) => {
           toast.error(err?.message ?? "Failed to release transfer");
@@ -169,15 +196,19 @@ export default function HubTransfers() {
   };
 
   const handleConfirm = () => {
-    if (!selectedGroup) return;
+    if (!selectedGroup || selectedLegIds.size === 0) {
+      toast.error("Please select at least one shipment");
+      return;
+    }
     confirmMutation.mutate(
-      { legIds: selectedGroup.legs.map((l) => l.id), note: note || undefined },
+      { legIds: Array.from(selectedLegIds), note: note || undefined },
       {
         onSuccess: () => {
-          toast.success(`Confirmed receipt of ${selectedGroup.count} shipment${selectedGroup.count !== 1 ? "s" : ""}`);
+          toast.success(`Confirmed receipt of ${selectedLegIds.size} shipment${selectedLegIds.size !== 1 ? "s" : ""}`);
           setSelectedGroup(null);
           setNote("");
           setAction(null);
+          setSelectedLegIds(new Set());
         },
         onError: (err: Error) => {
           toast.error(err?.message ?? "Failed to confirm receipt");
@@ -190,6 +221,35 @@ export default function HubTransfers() {
     setSelectedGroup(group);
     setAction(actionType);
     setNote("");
+    // For release action on PENDING legs, pre-select only ready legs
+    // For confirm action on IN_PROGRESS legs, pre-select all
+    if (actionType === "release" && group.legs[0]?.status === 'PENDING') {
+      const readyLegIds = group.legs.filter(isLegReady).map(l => l.id);
+      setSelectedLegIds(new Set(readyLegIds));
+    } else {
+      setSelectedLegIds(new Set(group.legs.map(l => l.id)));
+    }
+  };
+
+  const toggleLegSelection = (legId: string) => {
+    setSelectedLegIds(prev => {
+      const next = new Set(prev);
+      if (next.has(legId)) {
+        next.delete(legId);
+      } else {
+        next.add(legId);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (!selectedGroup) return;
+    if (selectedLegIds.size === selectedGroup.legs.length) {
+      setSelectedLegIds(new Set());
+    } else {
+      setSelectedLegIds(new Set(selectedGroup.legs.map(l => l.id)));
+    }
   };
 
   if (isLoading) {
@@ -396,14 +456,78 @@ export default function HubTransfers() {
                 </div>
               )}
 
-              {lockedPending.length > 0 && (
+              {partiallyReadyPending.length > 0 && (
                 <div>
                   <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
                     <Lock className="h-3 w-3" />
-                    Waiting for prior legs to complete ({lockedPending.length})
+                    Partially ready - some shipments blocked ({partiallyReadyPending.length})
                   </p>
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {lockedPending.map((group, idx) => (
+                    {partiallyReadyPending.map((group, idx) => {
+                      const readyCount = group.readyCount ?? 0;
+                      const blockedCount = group.blockedCount ?? 0;
+                      return (
+                        <Tooltip key={idx}>
+                          <TooltipTrigger asChild>
+                            <Card className="hover:shadow-md transition-shadow border-orange-300">
+                              <CardHeader>
+                                <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+                                  <span className="truncate max-w-[120px]">{group.originHubName}</span>
+                                  <ArrowRight className="h-4 w-4 shrink-0" />
+                                  <span className="truncate max-w-[120px]">{group.destHubName}</span>
+                                </CardTitle>
+                                <CardDescription>
+                                  <span className="text-green-600 font-medium">{readyCount} ready</span>
+                                  {" / "}
+                                  <span className="text-orange-600">{blockedCount} blocked</span>
+                                </CardDescription>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="flex flex-wrap gap-2">
+                                  <Button
+                                    onClick={() => openDialog(group, "release")}
+                                    className="flex-1 min-w-[100px]"
+                                    size="sm"
+                                  >
+                                    <Truck className="h-4 w-4 mr-1" />
+                                    Release {readyCount}
+                                  </Button>
+                                  <BulkCartonLabel
+                                    legs={group.legs.filter(isLegReady)}
+                                    originHubName={group.originHubName}
+                                    destHubName={group.destHubName}
+                                    originHubCity={group.legs[0]?.originHub?.city}
+                                    destHubCity={group.legs[0]?.destHub?.city}
+                                  />
+                                  <Button
+                                    onClick={() => setViewGroup(group)}
+                                    variant="outline"
+                                    size="sm"
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="max-w-xs">
+                            <p className="text-xs">{group.blockedReason}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {fullyLockedPending.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1">
+                    <Lock className="h-3 w-3" />
+                    Waiting for prior legs to complete ({fullyLockedPending.length})
+                  </p>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {fullyLockedPending.map((group, idx) => (
                       <Tooltip key={idx}>
                         <TooltipTrigger asChild>
                           <Card className="opacity-60 border-dashed cursor-not-allowed">
@@ -545,6 +669,95 @@ export default function HubTransfers() {
                       {selectedGroup.count}
                     </Badge>
                   </div>
+
+                  <div className="flex items-center justify-between p-3 bg-primary/10 rounded-lg border border-primary/20">
+                    <span className="font-medium">Selected for {action === "release" ? "Release" : "Confirm"}:</span>
+                    <Badge variant="default" className="text-base">
+                      {selectedLegIds.size} / {selectedGroup.count}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold">Select Shipments</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={toggleSelectAll}
+                      className="h-8 text-xs"
+                    >
+                      {selectedLegIds.size === selectedGroup.legs.length ? "Deselect All" : "Select All"}
+                    </Button>
+                  </div>
+                  <div className="border rounded-lg overflow-hidden">
+                    <div className="max-h-[300px] overflow-y-auto">
+                      <table className="w-full">
+                        <thead className="bg-muted/50 sticky top-0">
+                          <tr>
+                            <th className="p-2 text-left w-12">
+                              <input
+                                type="checkbox"
+                                checked={selectedLegIds.size === selectedGroup.legs.length}
+                                onChange={toggleSelectAll}
+                                className="cursor-pointer"
+                              />
+                            </th>
+                            <th className="p-2 text-left text-xs font-medium">Tracking #</th>
+                            <th className="p-2 text-left text-xs font-medium">Leg #</th>
+                            <th className="p-2 text-left text-xs font-medium">Status</th>
+                            <th className="p-2 text-left text-xs font-medium">Created</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {selectedGroup.legs.map((leg) => {
+                            const legReady = isLegReady(leg);
+                            const isBlocked = !legReady;
+                            return (
+                              <tr
+                                key={leg.id}
+                                className={`border-t hover:bg-muted/30 ${
+                                  isBlocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                                } ${
+                                  selectedLegIds.has(leg.id) ? 'bg-primary/5' : ''
+                                }`}
+                                onClick={() => !isBlocked && toggleLegSelection(leg.id)}
+                              >
+                                <td className="p-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedLegIds.has(leg.id)}
+                                    onChange={() => toggleLegSelection(leg.id)}
+                                    disabled={isBlocked}
+                                    className="cursor-pointer disabled:cursor-not-allowed"
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                </td>
+                                <td className="p-2 text-xs font-mono">{leg.shipment?.trackingNumber}</td>
+                                <td className="p-2 text-xs">Leg {leg.legNumber}</td>
+                                <td className="p-2 text-xs">
+                                  {isBlocked ? (
+                                    <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 border-orange-300">
+                                      <Lock className="h-3 w-3 mr-1" />
+                                      Blocked
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-300">
+                                      Ready
+                                    </Badge>
+                                  )}
+                                </td>
+                                <td className="p-2 text-xs text-muted-foreground">
+                                  {new Date(leg.createdAt).toLocaleDateString()}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
@@ -559,7 +772,7 @@ export default function HubTransfers() {
 
                 <Button
                   onClick={action === "release" ? handleRelease : handleConfirm}
-                  disabled={releaseMutation.isPending || confirmMutation.isPending}
+                  disabled={releaseMutation.isPending || confirmMutation.isPending || selectedLegIds.size === 0}
                   className="w-full"
                 >
                   {action === "release" ? (
@@ -567,14 +780,18 @@ export default function HubTransfers() {
                       <Truck className="h-4 w-4 mr-2" />
                       {releaseMutation.isPending
                         ? "Releasing..."
-                        : `Release ${selectedGroup.count} Shipment${selectedGroup.count !== 1 ? "s" : ""}`}
+                        : selectedLegIds.size === 0
+                        ? "Select shipments to release"
+                        : `Release ${selectedLegIds.size} Shipment${selectedLegIds.size !== 1 ? "s" : ""}`}
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="h-4 w-4 mr-2" />
                       {confirmMutation.isPending
                         ? "Confirming..."
-                        : `Confirm ${selectedGroup.count} Shipment${selectedGroup.count !== 1 ? "s" : ""}`}
+                        : selectedLegIds.size === 0
+                        ? "Select shipments to confirm"
+                        : `Confirm ${selectedLegIds.size} Shipment${selectedLegIds.size !== 1 ? "s" : ""}`}
                     </>
                   )}
                 </Button>

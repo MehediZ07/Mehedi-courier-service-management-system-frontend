@@ -5,7 +5,7 @@ import { useGetAllShipments, useGetAllCouriers, useGetAllMerchants } from "@/hoo
 import { AIInsightsWidget } from "@/components/shared/AIInsightsWidget";
 
 export function AIInsightsCard({ analytics }: {
-    analytics: { totalVisits: number; todayVisits: number; liveUsers: number }
+    analytics: { totalVisits: number; todayVisits: number; uniqueVisitorsToday: number; liveUsers: number }
 }) {
     const { data: shipmentsRes } = useGetAllShipments({ limit: 1000 });
     const { data: couriersRes } = useGetAllCouriers({ limit: 1000 });

@@ -3,23 +3,31 @@ import StatsCard from "@/components/shared/StatsCard";
 interface AnalyticsStatsProps {
   totalVisits: number;
   todayVisits: number;
+  uniqueVisitorsToday: number;
   liveUsers: number;
 }
 
-export function AnalyticsStats({ totalVisits, todayVisits, liveUsers }: AnalyticsStatsProps) {
+export function AnalyticsStats({ totalVisits, todayVisits, uniqueVisitorsToday, liveUsers }: AnalyticsStatsProps) {
   return (
-    <div className="grid gap-4 md:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-4">
       <StatsCard
-        title="Total Visitors"
+        title="Total Page Views"
         value={totalVisits}
         iconName="Eye"
-        description="All time visitors"
+        description="All time page views"
       />
       <StatsCard
-        title="Today's Visitors"
+        title="Today's Page Views"
         value={todayVisits}
         iconName="TrendingUp"
-        description="Visitors today"
+        description="Page views today"
+      />
+      <StatsCard
+        title="Unique Visitors Today"
+        value={uniqueVisitorsToday}
+        iconName="Users"
+        description="Unique sessions today"
+        className="border-purple-500/20"
       />
       <StatsCard
         title="Live Users"

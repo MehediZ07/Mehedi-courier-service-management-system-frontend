@@ -330,7 +330,7 @@ export default function CourierTrackShipment() {
                                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                                         <StatusBadgeCell status={event.status} />
                                                         <p className="text-xs text-muted-foreground">
-                                                            {new Date(event.createdAt).toLocaleString()}
+                                                            {new Date(event.timestamp).toLocaleString()}
                                                         </p>
                                                     </div>
                                                     {event.note && (
